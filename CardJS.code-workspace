@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../ChatGPT creations/ChatGPT-Creations"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "CardJS",
+		"liveServer.settings.file": "holdemhands.html"
+	}
+}
