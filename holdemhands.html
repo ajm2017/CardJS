@@ -25,6 +25,18 @@
     #rankTable th {
       cursor: pointer;
     }
+
+    .countlabel {
+      width:150px;
+      font-weight:bold;
+      display:inline-flex;
+    }
+
+    .countnum {
+      width:150px;
+      display:inline-flex;
+    }
+
   </style>
 </head>
 <body>
@@ -52,8 +64,9 @@
     </tr>
     <tbody id="rankTableBody"></tbody>
   </table>
-  <br><div id="totalHands"></div>
-  <br><div id="handsPerSecond"><b>Hands / Second</b>: 0</div>
+  <br><div class="countlabel">Total Hands:</div><div class="countnum" id="totalHands"></div>
+  <br><div class="countlabel">Hands / s (HPS):</div><div class="countnum" id="HPS">0</div>
+  <br><div class="countlabel">Best HPS:</div><div class="countnum" id="fastestHPS">0</div>
 
   <script src="./Card.js"></script>
   <script>
@@ -131,7 +144,7 @@
         row.append($("<td>").text("").attr("id", rank.replaceAll(' ','') + "DeltaP2"));
         tableBody.append(row);
       }
-      $("#totalHands").html("<b>Total Hands</b>: " + totalHands.toLocaleString());
+      $("#totalHands").html(totalHands.toLocaleString());
     }
 
     function updateRankCounts(rank) {
@@ -161,7 +174,7 @@
         $("#" + r.replaceAll(' ','') + "Delta2").text((delta2).toFixed(4));
         $("#" + r.replaceAll(' ','') + "DeltaP2").text((deltap2).toFixed(4) + "%");
       }
-      $("#totalHands").html("<b>Total Hands</b>: " + totalHands.toLocaleString());
+      $("#totalHands").html(totalHands.toLocaleString());
     }
 
     var continuousTrialsInterval;
@@ -171,6 +184,7 @@
     var startTime=null;
     var startHands=null;
     var endHands=null;
+    var fastest_handspeed=0;
 
     function continuousTrials(num, v) {     
       continuousTrialsInterval = setInterval(() => { runTrials(num, v); }, 1);
@@ -182,7 +196,9 @@
 
     function calculateHandsPerSecond(m,h) {
       var handsPerSecond = h / (m / 1000);
-      $("#handsPerSecond").html("Hands per Second: " + parseInt(handsPerSecond).toLocaleString());
+      if (handsPerSecond > fastest_handspeed) fastest_handspeed = handsPerSecond
+      $("#HPS").html        (parseInt(handsPerSecond).toLocaleString());
+      $("#fastestHPS").html (parseInt(fastest_handspeed).toLocaleString());
     }
 
     function runTrials(numTrials, v) {      

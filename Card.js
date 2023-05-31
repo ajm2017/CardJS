@@ -364,8 +364,6 @@ function rankHand(hand, handSize, v) {
 }
 
 
-
-
 //For binary decks only
 function rankHand_bin(hand, handSize, v) {     
   
@@ -419,6 +417,17 @@ function rankHand_bin(hand, handSize, v) {
     return false;
   }
 
+  function hasPair_fast(hand) {
+    //any pair exists, AT LEAST !!
+    //returns the rank to be used later in two pair and three of a kind and full checks
+    for (var i = 0; i < hand.length-1; i++) {
+      for (var j = i+1; j < hand.length; j++) {
+        if ((hand[i] & 0b001111) == (hand[j] & 0b001111)) return (hand[i] & 0b001111);
+      }  
+    }
+    return 0;
+  }
+
   function hasTwoPairs(hand) {
     var handRanks = hand.map(function(card) {
       return card & 0b001111;
@@ -439,6 +448,18 @@ function rankHand_bin(hand, handSize, v) {
       }
     }
     return pairCount === 2;
+  }
+
+  function hasTwoPairs_fast(hand,firstrank) {
+    //returns if another pair, other than first rank exists
+    hand = hand.filter(card => (card & 0b001111) !== firstrank);
+    for (var i = 0; i < hand.length-1; i++) {
+      for (var j = i+1; j < hand.length; j++) {
+        //if ((hand[i] & 0b001111) != firstrank && (hand[i] & 0b001111) == (hand[j] & 0b001111)) return true;
+        if ((hand[i] & 0b001111) == (hand[j] & 0b001111)) return true;
+      }  
+    }
+    return false;
   }
 
   function hasThreeOfAKind(hand) {
@@ -586,8 +607,8 @@ function rankHand_bin(hand, handSize, v) {
     generateCombinations(hand, 5, [], 0);
 
     // Inits
-    var bestRankNum = 0;
-    var hasP = hasPair(hand);
+    var bestRankNum = 0;    
+    var hasP = (hasPair_fast(hand)>0);
     //var hasF = hasFlush(hand,5);  //actually worse!
     var isF,isP,hasS;
 
@@ -596,10 +617,11 @@ function rankHand_bin(hand, handSize, v) {
       var currentHand = possibleHands[i];
       var currentRankNum = 0;
       var bail = false;
+      var prank=0;
 
       //isF = hasF && isFlush(currentHand); //actually worse!
-      isF = isFlush(currentHand);
-      isP = hasP && hasPair(currentHand);
+      isF = isFlush(currentHand);      
+      isP = !isF && hasP && ((prank = hasPair_fast(currentHand))>0);
       isS = !isP && hasStraight(currentHand);
 
       if (isF && isS) {
@@ -611,7 +633,7 @@ function rankHand_bin(hand, handSize, v) {
         }
       } else if (bestRankNum < 8 && isP && hasQuads(currentHand)) {
         currentRankNum = 8;
-        bail = true; // can't have straight flush now in the 7
+        bail = true; // can't have straight flush now in the 7 hand
       } else if (bestRankNum < 7 && isP && hasFullHouse(currentHand)) {
         currentRankNum = 7;
       } else if (bestRankNum < 6 && isF) {
@@ -620,7 +642,7 @@ function rankHand_bin(hand, handSize, v) {
         currentRankNum = 5;
       } else if (bestRankNum < 4 && isP && hasThreeOfAKind(currentHand)) {
         currentRankNum = 4;
-      } else if (bestRankNum < 3 && isP && hasTwoPairs(currentHand)) {
+      } else if (bestRankNum < 3 && isP && hasTwoPairs_fast(currentHand,prank)) {
         currentRankNum = 3;
       } else if (bestRankNum < 2 && isP) {
         currentRankNum = 2;
