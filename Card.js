@@ -600,34 +600,29 @@ function rankHand_bin(hand, handSize, v) {
       //isF = hasF && isFlush(currentHand); //actually worse!
       isF = isFlush(currentHand);
       isP = hasP && hasPair(currentHand);
-      hasS = !isP && hasStraight(currentHand);
+      isS = !isP && hasStraight(currentHand);
 
-      if (isF && hasS) {
+      if (isF && isS) {
         if (isRoyal(currentHand)) {
           currentRankNum = 10;
           bail = true;
         } else {
           currentRankNum = 9;
         }
-      } else if (bestRankNum < 8 && currentRankNum<8 && hasP && hasQuads(currentHand)) {
-      //} else if (bestRankNum < 8 && currentRankNum<8 && hasQuads(currentHand)) {
+      } else if (bestRankNum < 8 && isP && hasQuads(currentHand)) {
         currentRankNum = 8;
         bail = true; // can't have straight flush now in the 7
-      } else if (bestRankNum < 7 && hasP && hasFullHouse(currentHand)) {
-      //} else if (bestRankNum < 7 && hasFullHouse(currentHand)) {
+      } else if (bestRankNum < 7 && isP && hasFullHouse(currentHand)) {
         currentRankNum = 7;
       } else if (bestRankNum < 6 && isF) {
         currentRankNum = 6;
-      } else if (bestRankNum < 5 && hasS) {
+      } else if (bestRankNum < 5 && isS) {
         currentRankNum = 5;
-      } else if (bestRankNum < 4 && hasP && hasThreeOfAKind(currentHand)) {
-      //} else if (bestRankNum < 4 && hasThreeOfAKind(currentHand)) {
+      } else if (bestRankNum < 4 && isP && hasThreeOfAKind(currentHand)) {
         currentRankNum = 4;
-      } else if (bestRankNum < 3 && hasP && hasTwoPairs(currentHand)) {
-      //} else if (bestRankNum < 3 && hasTwoPairs(currentHand)) {
+      } else if (bestRankNum < 3 && isP && hasTwoPairs(currentHand)) {
         currentRankNum = 3;
       } else if (bestRankNum < 2 && isP) {
-      //} else if (bestRankNum < 2) {
         currentRankNum = 2;
       } else {
         currentRankNum = 1;
