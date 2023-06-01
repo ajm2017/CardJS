@@ -165,11 +165,14 @@ function rankHand_bin(hand, handSize, v) {
 
   function isStraight_fast2(hand) {
     var handsize=hand.length;
-    var handRanks = hand.map(function(card) {
+    var uniqueRanks = hand.map(function(card) {
       return card & 0b001111;
     });
-    var uniqueRanks = Array.from(new Set(handRanks));
-    if (uniqueRanks.length < handsize) return false;
+    
+    //Because I always check for pair existence before calling, there will always be unique ranks equal
+    //to handsize...
+    //var uniqueRanks = Array.from(new Set(handRanks));
+    //if (uniqueRanks.length < handsize) return false;
 
     //ACES LO (rank value 1)
     var bail=false;
