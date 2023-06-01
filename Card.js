@@ -2,8 +2,6 @@ const cardRanksHI = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'
 const cardRanksLO = ['A','2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const royalRanks = ['10', 'J', 'Q', 'K', 'A'];
 
-const cardRanksHI_bin = [2,3,4,5,6,7,8,9,10,11,12,13,1];
-const cardRanksLO_bin = [1,2,3,4,5,6,7,8,9,10,11,12,13];
 const royalRanks_bin = [10,11,12,13,1];
 
 function createDeck(v) {
