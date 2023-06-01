@@ -127,71 +127,41 @@ function rankHand_bin(hand, handSize, v) {
   }
    
   
-
-  function hasQuads(hand) {
-    var handRanks = hand.map(function(card) {
-      return card & 0b001111;
-    });
-    var rankCounts = {};
-    for (var i = 0; i < handSize; i++) {
-      var rank = handRanks[i];
-      if (rank in rankCounts) {
-        rankCounts[rank]++;
-      } else {
-        rankCounts[rank] = 1;
-      }
-    }
-    for (var rank in rankCounts) {
-      if (rankCounts[rank] === 4) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   function hasQuads_fast(hand, firstrank) {
     hand = hand.filter(card => (card & 0b001111) !== firstrank);
     return hand.length==1;
   }
 
-  function hasStraight(hand) {
+  function isStraight_fast(hand) {
+    var handsize=hand.length;
     var handRanks = hand.map(function(card) {
       return card & 0b001111;
     });
     var uniqueRanks = Array.from(new Set(handRanks));
-    if (uniqueRanks.length < 5) return false;
+    if (uniqueRanks.length < handsize) return false;
 
-    //ACES High
-    uniqueRanks.sort(function(a, b) {
-      return cardRanksHI_bin.indexOf(a) - cardRanksHI_bin.indexOf(b);
-    });
-    var isStraight = true;
-    for (var i = 1; i < uniqueRanks.length; i++) {
-      var currentRankIndex = cardRanksHI_bin.indexOf(uniqueRanks[i]);
-      var previousRankIndex = cardRanksHI_bin.indexOf(uniqueRanks[i - 1]);
-      if (currentRankIndex - previousRankIndex !== 1) {
-        isStraight = false;
-        break;
-      }
-    }
+    //ACES LO (rank value 1)
+    uniqueRanks.sort(function(a, b) { return a - b; });
+    var lowrank = uniqueRanks[0];
+    var hirank  = uniqueRanks[handsize-1];
+    if (hirank-lowrank+1==handsize) return true;
 
-    if (isStraight) return true;
+    //If there is even an ace...
     if (uniqueRanks.includes(1)) {
-      //ACES Lo
-      uniqueRanks.sort(function(a, b) {
-        return cardRanksLO_bin.indexOf(a) - cardRanksLO_bin.indexOf(b);
-      });
-      var isStraight = true;
-      for (var i = 1; i < uniqueRanks.length; i++) {
-        var currentRankIndex = cardRanksLO_bin.indexOf(uniqueRanks[i]);
-        var previousRankIndex = cardRanksLO_bin.indexOf(uniqueRanks[i - 1]);
-        if (currentRankIndex - previousRankIndex !== 1) {
-          isStraight = false;
-          break;
+      //ACES HI - change aces to 14
+      uniqueRanks = uniqueRanks.map(value => {
+        if (value === 1) {
+          return 14;  
+        } else {
+          return value; 
         }
-      }
+      });
+      uniqueRanks.sort(function(a, b) { return a - b; });
+      var lowrank = uniqueRanks[0];
+      var hirank  = uniqueRanks[handsize-1];
+      if (hirank-lowrank+1==handsize) return true;
     }
-    return isStraight;
+    return false;
   }
 
   function isRoyal(hand) {
@@ -242,7 +212,7 @@ function rankHand_bin(hand, handSize, v) {
       //isF = hasF && isFlush(currentHand); //actually worse!
       isF = isFlush(currentHand);      
       isP = !isF && hasP && ((prank = hasPair_fast(currentHand))>0);
-      isS = !isP && hasStraight(currentHand);
+      isS = !isP && isStraight_fast(currentHand);
 
       if (isF && isS) {
         if (isRoyal(currentHand)) {
