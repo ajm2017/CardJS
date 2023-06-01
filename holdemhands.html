@@ -135,7 +135,7 @@
         var cumulativePercentage = ((cumulativeCount / totalHands) * 100).toFixed(4);
         var row = $("<tr>");
         row.append($("<td>").text(rankNames[rank]));
-        row.append($("<td>").text(count).attr("id", rankNames[rank].replaceAll(' ','') + "Count"));
+        row.append($("<td>").text(count.toLocaleString()).attr("id", rankNames[rank].replaceAll(' ','') + "Count"));
         row.append($("<td>").text(percentage + "%").attr("id", rankNames[rank].replaceAll(' ','') + "Percentage"));
         row.append($("<td>").text(probability1[rankNames[rank]].toFixed(5) + "%"));
         row.append($("<td>").text("").attr("id", rankNames[rank].replaceAll(' ','') + "Delta1"));
@@ -164,7 +164,7 @@
         delta2 = cumulativePercentage - probability2[rankNames[i]];
         deltap1 = Math.abs(delta1) / probability1[rankNames[i]] * 100;
         deltap2 = Math.abs(delta2) / probability2[rankNames[i]] * 100;
-        $("#" + rankNames[i].replaceAll(' ','') + "Count").text(rankCounts[i]);
+        $("#" + rankNames[i].replaceAll(' ','') + "Count").text(rankCounts[i].toLocaleString());
         $("#" + rankNames[i].replaceAll(' ','') + "Percentage").text((useperc).toFixed(5) + "%");
         $("#" + rankNames[i].replaceAll(' ','') + "Delta1").text((delta1).toFixed(5));
         $("#" + rankNames[i].replaceAll(' ','') + "DeltaP1").text((deltap1).toFixed(4) + "%");
