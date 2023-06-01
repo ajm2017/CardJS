@@ -125,8 +125,7 @@ function rankHand_bin(hand, handSize, v) {
     }
     return true;
   }
-   
-  
+     
   function hasQuads_fast(hand, firstrank) {
     hand = hand.filter(card => (card & 0b001111) !== firstrank);
     return hand.length==1;
@@ -160,6 +159,40 @@ function rankHand_bin(hand, handSize, v) {
       var lowrank = uniqueRanks[0];
       var hirank  = uniqueRanks[handsize-1];
       if (hirank-lowrank+1==handsize) return true;
+    }
+    return false;
+  }
+
+  function isStraight_fast2(hand) {
+    var handsize=hand.length;
+    var handRanks = hand.map(function(card) {
+      return card & 0b001111;
+    });
+    var uniqueRanks = Array.from(new Set(handRanks));
+    if (uniqueRanks.length < handsize) return false;
+
+    //ACES LO (rank value 1)
+    var bail=false;
+    for (var i = 0; i < uniqueRanks.length-1; i++) {
+      for (var j = i+1; j < uniqueRanks.length; j++) {
+        if (Math.abs(uniqueRanks[i] - uniqueRanks[j]) >= handsize) {bail=true; break;}
+      }
+      if (bail) break;
+    }
+    if (!bail) return true;
+
+    //If there is even an ace...
+    if (uniqueRanks.includes(1)) {
+      //ACES HI - change aces to 14
+      uniqueRanks = uniqueRanks.map(value => {
+        if (value === 1) { return 14; } else { return value; }
+      });
+      for (var i = 0; i < uniqueRanks.length-1; i++) {
+        for (var j = i+1; j < uniqueRanks.length; j++) {
+          if (Math.abs(uniqueRanks[i] - uniqueRanks[j]) >= handsize) {return false;}
+        }  
+      }
+      return true;
     }
     return false;
   }
@@ -212,7 +245,7 @@ function rankHand_bin(hand, handSize, v) {
       //isF = hasF && isFlush(currentHand); //actually worse!
       isF = isFlush(currentHand);      
       isP = !isF && hasP && ((prank = hasPair_fast(currentHand))>0);
-      isS = !isP && isStraight_fast(currentHand);
+      isS = !isP && isStraight_fast2(currentHand);
 
       if (isF && isS) {
         if (isRoyal(currentHand)) {
