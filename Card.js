@@ -394,8 +394,7 @@ function rankHand_bin(hand, handSize, v) {
       }
     }    
     return false;
-  }
-  
+  }  
 
   function hasPair(hand) {
     //any pair exists, AT LEAST !!
@@ -481,6 +480,11 @@ function rankHand_bin(hand, handSize, v) {
       }
     }
     return false;
+  }
+
+  function hasThreeOfAKind_fast(hand, firstrank) {
+    hand = hand.filter(card => (card & 0b001111) !== firstrank);
+    return hand.length==2;
   }
 
   function hasFullHouse(hand) {
@@ -586,8 +590,8 @@ function rankHand_bin(hand, handSize, v) {
   }
 
 
-  // Function to find the best 5-card hand from the given hand
-  function findBestHand(hand) {
+  // Function to find the best 5-card hand RANK from the given hand
+  function findBestRank(hand) {
     var possibleHands = [];
 
     // Generate all possible combinations of 5-card hands from the given hand
@@ -640,7 +644,7 @@ function rankHand_bin(hand, handSize, v) {
         currentRankNum = 6;
       } else if (bestRankNum < 5 && isS) {
         currentRankNum = 5;
-      } else if (bestRankNum < 4 && isP && hasThreeOfAKind(currentHand)) {
+      } else if (bestRankNum < 4 && isP && hasThreeOfAKind_fast(currentHand,prank)) {
         currentRankNum = 4;
       } else if (bestRankNum < 3 && isP && hasTwoPairs_fast(currentHand,prank)) {
         currentRankNum = 3;
@@ -658,49 +662,13 @@ function rankHand_bin(hand, handSize, v) {
       if (bail) break;
     }
 
-
-    // Map bestRankNum back to the corresponding rank string
-    var bestRank;
-    switch (bestRankNum) {
-      case 10:
-        bestRank = "Royal Flush";
-        break;
-      case 9:
-        bestRank = "Straight Flush";          
-        break;
-      case 8:
-        bestRank = "Quads";
-        break;
-      case 7:
-        bestRank = "Full House";
-        break;
-      case 6:
-        bestRank = "Flush";
-        break;
-      case 5:
-        bestRank = "Straight";
-        break;
-      case 4:
-        bestRank = "Three of a Kind";
-        break;
-      case 3:
-        bestRank = "Two Pair";
-        break;
-      case 2:
-        bestRank = "Pair";
-        break;
-      case 1:
-        bestRank = "High Card";
-        break;
-    }
-
-    if (v) console.log("Rank:", bestRank);
-    return { bestHand, bestRank };
+    if (v) console.log("Rank:", bestRankNum);
+    return bestRankNum;
   }
 
   // Check if the hand size is valid
   if (handSize === 5) {
-    return findBestHand(hand);
+    return findBestRank(hand);
   } else {
     console.log("Invalid hand size for ranking");
   }
