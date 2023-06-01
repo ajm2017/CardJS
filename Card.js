@@ -516,6 +516,19 @@ function rankHand_bin(hand, handSize, v) {
     return false;
   }
 
+  function hasFullHouse_fast(hand,firstrank) {
+    hand = hand.filter(card => (card & 0b001111) !== firstrank);    
+    //We know there's at least pair & can't be quads, so only 2 or 3 cards left
+    //And, the remaining cards after filter MUST match rank.    
+    var handRank = hand[0] & 0b001111;
+    for (var i = 1; i < hand.length; i++) {
+       if ((hand[i] & 0b001111) != handRank) return false;
+    }
+    return true;
+  }
+   
+  
+
   function hasQuads(hand) {
     var handRanks = hand.map(function(card) {
       return card & 0b001111;
@@ -643,7 +656,7 @@ function rankHand_bin(hand, handSize, v) {
       } else if (bestRankNum < 8 && isP && hasQuads_fast(currentHand,prank)) {
         currentRankNum = 8;
         bail = true; // can't have straight flush now in the 7 hand
-      } else if (bestRankNum < 7 && isP && hasFullHouse(currentHand)) {
+      } else if (bestRankNum < 7 && isP && hasFullHouse_fast(currentHand,prank)) {
         currentRankNum = 7;
       } else if (bestRankNum < 6 && isF) {
         currentRankNum = 6;
