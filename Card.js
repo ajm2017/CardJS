@@ -537,6 +537,11 @@ function rankHand_bin(hand, handSize, v) {
     return false;
   }
 
+  function hasQuads_fast(hand, firstrank) {
+    hand = hand.filter(card => (card & 0b001111) !== firstrank);
+    return hand.length==1;
+  }
+
   function hasStraight(hand) {
     var handRanks = hand.map(function(card) {
       return card & 0b001111;
@@ -635,7 +640,7 @@ function rankHand_bin(hand, handSize, v) {
         } else {
           currentRankNum = 9;
         }
-      } else if (bestRankNum < 8 && isP && hasQuads(currentHand)) {
+      } else if (bestRankNum < 8 && isP && hasQuads_fast(currentHand,prank)) {
         currentRankNum = 8;
         bail = true; // can't have straight flush now in the 7 hand
       } else if (bestRankNum < 7 && isP && hasFullHouse(currentHand)) {
