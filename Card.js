@@ -29,6 +29,12 @@ function createDeck_bin(v) {
   return d;
 }
 
+function bin2str(c) {
+  s = ['♠', '♣', '♥', '♦'][c >> 4];
+  r = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'][(c & 0b001111)-1];
+  return r+s;
+}
+
 function shuffleDeck(d, v) {
   d.sort(function() { return 0.5 - Math.random(); });
   if (v) console.log("Deck shuffled:", d);
@@ -47,7 +53,7 @@ function shuffleDeckFY(d, v) {
 }
  
 function dealCards(d, numCards, v) {
-  var hand = d.slice(0, numCards);      
+  var hand = d.splice(0, numCards);  
   if (v) console.log("Hand dealt:", hand);      
   return hand;
 }

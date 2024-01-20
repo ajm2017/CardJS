@@ -3,6 +3,51 @@
 <head>
   <title>Hold'em Race</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <script>
+
+    function buildRangeTable(who) {
+      const cards = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+      let tableHTML = '';  
+      cards.forEach((card, index) => {
+        tableHTML += '<tr>';                
+        cards.slice(0,index).forEach(innerCard => {
+          tableHTML += `<td><button class="hand-range-button ${who}" id="${innerCard}${card}o">${innerCard}${card}o</button></td>`;
+        });
+        cards.slice(index).forEach(innerCard => {
+          if (card==innerCard) {
+            tableHTML += `<td><button class="hand-range-button pocketpair ${who}" id="${who}_${card}${innerCard}">${card}${innerCard}</button></td>`;
+          } else {
+            tableHTML += `<td><button class="hand-range-button ${who}" id="${who}_${card}${innerCard}s">${card}${innerCard}s</button></td>`;
+          }          
+        });       
+        tableHTML += '</tr>';        
+      });
+      return tableHTML;
+    }
+
+    function selectRangeForPosition(position,who) {
+      $('.' + who + ' .hand-range-button').removeClass('selected');
+      const ranges = {
+        'Custom': [], 
+        'UTG': ['AKs', 'AQs', 'AJs'], 
+        'UTG+1': ['AKs', 'AQs', 'AJs'], 
+        'UTG+2': [], 
+        'LJ': [], 
+        'HJ': [], 
+        'CO': [], 
+        'BTN': [], 
+        'SB': [], 
+        'LB': []
+      };
+      if (ranges[position]) {
+        ranges[position].forEach(hand => {
+          $('#' + who + '_' + hand).addClass('selected');
+        });
+      }
+    }
+
+  </script>
   
   <style>
     #rankTable {
@@ -37,7 +82,53 @@
       display:inline-flex;
     }
 
+    .hand-range-button {
+        width: 30px;
+        height: 30px;
+        margin: 0px;
+        font-size: 0.6em;
+        text-align: center;          
+    }
+
+    .pocketpair {
+      font-weight:bold;
+    }   
+
+    .selected {
+      background-color: #4CAF50; 
+      color: white;
+    }
+
+    .hand-range-selector {
+      align-items: center; 
+      flex-wrap: wrap; 
+    }
+
+    .quick-select-buttons {
+      display: flex; 
+      flex-wrap: nowrap; 
+      margin-left: 10px; 
+    }
+
+    .quick-select-buttons button {
+      margin-right: 5px;
+      font-size: 0.6em;
+    }
+
+    .range-selectors-container {
+      display: flex;
+      flex-direction: row; 
+      justify-content: space-between; 
+      align-items: flex-start; 
+    }
+
+    .hand-range-selector {
+      width: 48%; 
+    }
+
   </style>
+
+
 </head>
 <body>
 
@@ -60,139 +151,91 @@
   
   <hr size="1" noshade>
 
-  
-
-
-
-
-
-
-    <style>
-      .hand-range-button {
-          width: 30px;
-          height: 30px;
-          margin: 0px;
-          font-size: 0.6em;
-          text-align: center;          
-      }
-
-      .pocketpair {
-        font-weight:bold;
-      }   
-  
-      .selected {
-        background-color: #4CAF50; /* Green background for selected hands */
-        color: white;
-      }
-
-      .hand-range-selector {
-        align-items: center; /* Align items vertically in the center */
-        flex-wrap: wrap; /* Allow wrapping if necessary */
-      }
-
-      .quick-select-buttons {
-        display: flex; /* Ensures buttons are in a row */
-        flex-wrap: nowrap; /* Prevents buttons from wrapping */
-        margin-left: 10px; /* Optional: adds some space between the text and the buttons */
-      }
-
-      .quick-select-buttons button {
-        margin-right: 5px;
-        font-size: 0.6em;
-      }
-
-    </style>
-  
-  <div class="hand-range-selector">
-    Villain range: &nbsp;
-      <div class="quick-select-buttons">
-        <button class="quick-select" data-position="CUSTOM">Custom</button>
-        <button class="quick-select" data-position="UTG">UTG</button>
-        <button class="quick-select" data-position="UTG+1">UTG+1</button>
-        <button class="quick-select" data-position="UTG+2">UTG+2</button>
-        <button class="quick-select" data-position="LJ">LJ</button>
-        <button class="quick-select" data-position="HJ">HJ</button>
-        <button class="quick-select" data-position="CO">CO</button>
-        <button class="quick-select" data-position="BTN">BTN</button>
-        <button class="quick-select" data-position="SB">SB</button>
-        <button class="quick-select" data-position="BB">BB</button>
-      </div>
-      <br>
-      
-    <table id="handRangeTable">
-      <tbody>
-        <!-- Generated via JavaScript -->
-      </tbody>
-    </table>
+  <div class="range-selectors-container">
+    <div class="hand-range-selector hero">
+      Hero Range: &nbsp;
+        <div class="quick-select-buttons">
+          <button class="quick-select" data-position="CUSTOM">Custom</button>
+          <button class="quick-select" data-position="UTG">UTG</button>
+          <button class="quick-select" data-position="UTG+1">UTG+1</button>
+          <button class="quick-select" data-position="UTG+2">UTG+2</button>
+          <button class="quick-select" data-position="LJ">LJ</button>
+          <button class="quick-select" data-position="HJ">HJ</button>
+          <button class="quick-select" data-position="CO">CO</button>
+          <button class="quick-select" data-position="BTN">BTN</button>
+          <button class="quick-select" data-position="SB">SB</button>
+          <button class="quick-select" data-position="BB">BB</button>
+        </div>
+        <br>
+        
+      <table class="rangematrix" id="heroRange">
+        <tbody></tbody>
+      </table>
+    </div>
+    
+    
+    <div class="hand-range-selector villain">
+      Villain(s) Range: &nbsp;
+        <div class="quick-select-buttons">
+          <button class="quick-select" data-position="CUSTOM">Custom</button>
+          <button class="quick-select" data-position="UTG">UTG</button>
+          <button class="quick-select" data-position="UTG+1">UTG+1</button>
+          <button class="quick-select" data-position="UTG+2">UTG+2</button>
+          <button class="quick-select" data-position="LJ">LJ</button>
+          <button class="quick-select" data-position="HJ">HJ</button>
+          <button class="quick-select" data-position="CO">CO</button>
+          <button class="quick-select" data-position="BTN">BTN</button>
+          <button class="quick-select" data-position="SB">SB</button>
+          <button class="quick-select" data-position="BB">BB</button>
+        </div>
+        <br>
+        
+      <table class="rangematrix" id="villainRange">
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
   
+  
+  
+  
+  <hr size="1" noshade>  
+
+
+  <div class="hand-range-selector results">
+    Results: 
+      
+    <table class="rangematrix" id="resultRange">
+      <tbody></tbody>
+    </table>
+  </div>
+
+  
   <script>
+
     $(document).ready(function() {
-      const cards = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
-      let tableHTML = '';
-  
-      cards.forEach((card, index) => {
-        tableHTML += '<tr>';
-                
-        cards.slice(0,index).forEach(innerCard => {
-          tableHTML += `<td><button class="hand-range-button" id="${innerCard}${card}o">${innerCard}${card}o</button></td>`;
-        });
 
-        cards.slice(index).forEach(innerCard => {
-          if (card==innerCard) {
-            tableHTML += `<td><button class="hand-range-button pocketpair" id="${card}${innerCard}">${card}${innerCard}</button></td>`;
-          } else {
-            tableHTML += `<td><button class="hand-range-button" id="${card}${innerCard}s">${card}${innerCard}s</button></td>`;
-          }          
-        });       
-        tableHTML += '</tr>';
-      });
-  
-      $('#handRangeTable tbody').html(tableHTML);
-  
-      $('.hand-range-button').on('click', function() {
-        $(this).toggleClass('selected');
-      });
-
-      $('.quick-select').on('click', function() {
-        const position = $(this).data('position');
-        selectRangeForPosition(position);
-      });
-    });
-
-    function selectRangeForPosition(position) {
-      $('.hand-range-button').removeClass('selected');
-
-      // Define hand ranges for each position (example ranges, adjust as needed)
-      const ranges = {
-        'Custom': [], 
-        'UTG': ['AKs', 'AQs', 'AJs'], 
-        'UTG+1': ['AKs', 'AQs', 'AJs'], 
-        'UTG+2': [], 
-        'LJ': [], 
-        'HJ': [], 
-        'CO': [], 
-        'BTN': [], 
-        'SB': [], 
-        'LB': []
-
-      };
-
-      if (ranges[position]) {
-        ranges[position].forEach(hand => {
-          $('#' + hand).addClass('selected');
-        });
+      function displayRange(who) {
+        $('#'+who+'Range').html(buildRangeTable(who));  
+        if (who!='result') {
+          $('.' + who + '.hand-range-button').on('click', function() {  $(this).toggleClass('selected');  });
+          $('.' + who + ' .quick-select').on('click', function() {
+            const position = $(this).data('position');
+            selectRangeForPosition(position,who);
+          });  
+        } 
       }
-    }
+      
+      displayRange('hero');
+      displayRange('villain');
+      displayRange('result');
+
+      
+    });
+   
+    
   </script>
-  
-  
-  
 
-
-
-
-  
 
   <hr size="1" noshade>
 
@@ -203,24 +246,12 @@
   
   <hr size="1" noshade>
 
-  <table id="rankTable">
-    <tr>
-      <th>Rank</th>
-      <th>Count</th>
-      <th title="% of hands this rank">Occurrence %</th>
-      <th title="Probability of hands of this rank">Probability %</th>
-      <th>&Delta;</th>
-      <th>&Delta;%</th>
-      <th title="% of hands this rank OR BETTER">Cumulative<br>Occurence %</th>
-      <th title="Probability of hands of this rank OR BETTER">Cumulative<br>Probability %</th>
-      <th>&Delta;</th>
-      <th>&Delta;%</th>
-    </tr>
-    <tbody id="rankTableBody"></tbody>
-  </table>
-  <br><div class="countlabel">Total Hands:</div><div class="countnum" id="totalHands"></div>
-  <br><div class="countlabel">Hands / s (HPS):</div><div class="countnum" id="HPS">0</div>
-  <br><div class="countlabel">Best HPS:</div><div class="countnum" id="fastestHPS">0</div>
+
+
+  <br><div class="countlabel">Total Games:</div><div class="countnum" id="totalGames"></div>
+  <br><div class="countlabel">Eligible Games:</div><div class="countnumE" id="eligibleGames"></div>
+  <br><div class="countlabel">Games / s (GPS):</div><div class="countnum" id="GPS">0</div>
+  <br><div class="countlabel">Best GPS:</div><div class="countnum" id="fastestGPS">0</div>
 
   <script src="./Card.js"></script>
   <script>
@@ -243,39 +274,9 @@
       "Royal Flush"
     ];
 
-    var rankCounts = [0,0,0,0,0,0,0,0,0,0]
     
-    //https://en.wikipedia.org/wiki/Poker_probability
-    var probability1 = {
-      "High Card": 17.40000,
-      "Pair": 43.80000,
-      "Two Pair": 23.50000,
-      "Three of a Kind": 4.83000,
-      "Straight": 4.62000,
-      "Flush": 3.03000,
-      "Full House": 2.60000,
-      "Quads": 0.16800,
-      "Straight Flush": .02790,
-      "Royal Flush": .00320
-    };
-
-    var probability2 = {
-      "High Card": 100.0000,
-      "Pair": 83.6000,
-      "Two Pair": 38.8000,
-      "Three of a Kind": 15.3000,
-      "Straight": 10.4000,
-      "Flush": 5.8200,
-      "Full House": 2.8000,
-      "Quads": 0.1990,
-      "Straight Flush": .0309,
-      "Royal Flush": .0032
-    };
-
-    
-    // Build the initial rank table
     $(document).ready(function() {
-      updateRankTable();
+    
     });
 
     function updateRankTable() {
@@ -303,7 +304,9 @@
       $("#totalHands").html(totalHands.toLocaleString());
     }
 
+    
     function updateRankCounts() {
+      /*
       var cumulativeCount = 0;
       var cumulativePercentage = 0;
       var useperc;
@@ -327,7 +330,9 @@
         $("#" + rankNames[i].replaceAll(' ','') + "DeltaP2").text((deltap2).toFixed(4) + "%");
       }
       $("#totalHands").html(totalHands.toLocaleString());
+      */
     }
+    
 
     var continuousTrialsInterval;
     var totalHands=0;
@@ -349,8 +354,8 @@
     function calculateHandsPerSecond(m,h) {
       var handsPerSecond = h / (m / 1000);
       if (handsPerSecond > fastest_handspeed) fastest_handspeed = handsPerSecond
-      $("#HPS").html        (parseInt(handsPerSecond).toLocaleString());
-      $("#fastestHPS").html (parseInt(fastest_handspeed).toLocaleString());
+      $("#GPS").html        (parseInt(handsPerSecond).toLocaleString());
+      $("#fastestGPS").html (parseInt(fastest_handspeed).toLocaleString());
     }
 
     function runTrials(numTrials, v) {      
@@ -365,19 +370,40 @@
       }      
       for (var i = 0; i < numTrials; i++) recordTrial(v);
       trialsets++;
-      updateRankCounts();      
+      //updateRankCounts();      
     }
 
     function doTrial(v) {
       d = shuffleDeckFY(deckbin,v);
-      h = dealCards(d, 7, v);
-      r = rankHand_bin(h, 5, v);
-      if (v) console.log(r);
+      
+      h = dealCards(d, 2, v);
+      if (v) console.log("Deck now:", d);
+
+      v1 = dealCards(d, 2, v);
+      if (v) console.log("Deck now:", d);
+
+      c = dealCards(d, 5, v);
+      if (v) console.log("Deck now:", d);
+
+      console.log(c.concat(h));
+      c.concat(h).forEach(function (i){
+        //console.log (i & 0b001111)
+        console.log(bin2str(i));
+      })
+
+      r = rankHand_bin(c.concat(h), 5, v);
+      if (v) console.log(rankNames[r-1]);
+
+      d.push(...h);
+      d.push(...v1);
+      d.push(...c);
+
       return r;
     }
 
     function recordTrial(v) {
-      rankCounts[doTrial(v)-1]++;
+      //rankCounts[doTrial(v)-1]++;
+      doTrial(v);
       totalHands++;
     }
        

@@ -218,6 +218,9 @@
       d = shuffleDeckFY(deckbin,v);
       h = dealCards(d, 7, v);
       r = rankHand_bin(h, 5, v);
+      //console.log (d)
+      d.push(...h);
+      //console.log (d)
       if (v) console.log(r);
       return r;
     }
