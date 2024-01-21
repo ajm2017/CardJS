@@ -239,7 +239,7 @@
 
   <hr size="1" noshade>
 
-  <button onclick="recordTrial(true); updateRankCounts();">1 Trial</button>
+  <button onclick="recordTrial(true); /*updateRankCounts();*/">1 Trial</button>
   <button onclick="runTrials(10000, false);">10,000 Trials</button>
   <button onclick="continuousTrials(5000, false); $('#stopButton').prop('disabled', false);">Continuous</button>
   <button id="stopButton" onclick="stopContinuousTrials(); $(this).prop('disabled', true);" disabled>Stop</button>
@@ -261,77 +261,13 @@
     deck = createDeck(false);
     deckbin = createDeck_bin(false);
     
-    var rankNames = [
-      "High Card",
-      "Pair",
-      "Two Pair",
-      "Three of a Kind",
-      "Straight",
-      "Flush",
-      "Full House",
-      "Quads",
-      "Straight Flush",
-      "Royal Flush"
-    ];
-
-    
+        
     $(document).ready(function() {
     
     });
 
-    function updateRankTable() {
-      var tableBody = $("#rankTableBody");
-      tableBody.empty();
-      var cumulativeCount = 0;
-      for (var rank in rankCounts) {
-        var count = rankCounts[rank];
-        var percentage = ((count / totalHands) * 100).toFixed(5);
-        cumulativeCount += count;
-        var cumulativePercentage = ((cumulativeCount / totalHands) * 100).toFixed(4);
-        var row = $("<tr>");
-        row.append($("<td>").text(rankNames[rank]));
-        row.append($("<td>").text(count.toLocaleString()).attr("id", rankNames[rank].replaceAll(' ','') + "Count"));
-        row.append($("<td>").text(percentage + "%").attr("id", rankNames[rank].replaceAll(' ','') + "Percentage"));
-        row.append($("<td>").text(probability1[rankNames[rank]].toFixed(5) + "%"));
-        row.append($("<td>").text("").attr("id", rankNames[rank].replaceAll(' ','') + "Delta1"));
-        row.append($("<td>").text("").attr("id", rankNames[rank].replaceAll(' ','') + "DeltaP1"));
-        row.append($("<td>").text(cumulativePercentage + "%").attr("id", rankNames[rank].replaceAll(' ','') + "CumulativePercentage"));
-        row.append($("<td>").text(probability2[rankNames[rank]].toFixed(4) + "%"));
-        row.append($("<td>").text("").attr("id", rankNames[rank].replaceAll(' ','') + "Delta2"));
-        row.append($("<td>").text("").attr("id", rankNames[rank].replaceAll(' ','') + "DeltaP2"));
-        tableBody.append(row);
-      }
-      $("#totalHands").html(totalHands.toLocaleString());
-    }
-
     
-    function updateRankCounts() {
-      /*
-      var cumulativeCount = 0;
-      var cumulativePercentage = 0;
-      var useperc;
-      var delta1,delta2;
-      var deltap1,deltap2;
-      for (var i = rankNames.length-1; i >= 0; i--) {        
-        //console.log(i);
-        cumulativeCount += rankCounts[i];
-        cumulativePercentage = ((cumulativeCount / totalHands) * 100).toFixed(4);
-        useperc = (rankCounts[i] / totalHands) * 100;
-        delta1 = useperc - probability1[rankNames[i]];
-        delta2 = cumulativePercentage - probability2[rankNames[i]];
-        deltap1 = Math.abs(delta1) / probability1[rankNames[i]] * 100;
-        deltap2 = Math.abs(delta2) / probability2[rankNames[i]] * 100;
-        $("#" + rankNames[i].replaceAll(' ','') + "Count").text(rankCounts[i].toLocaleString());
-        $("#" + rankNames[i].replaceAll(' ','') + "Percentage").text((useperc).toFixed(5) + "%");
-        $("#" + rankNames[i].replaceAll(' ','') + "Delta1").text((delta1).toFixed(5));
-        $("#" + rankNames[i].replaceAll(' ','') + "DeltaP1").text((deltap1).toFixed(4) + "%");
-        $("#" + rankNames[i].replaceAll(' ','') + "CumulativePercentage").text(cumulativePercentage + "%");
-        $("#" + rankNames[i].replaceAll(' ','') + "Delta2").text((delta2).toFixed(4));
-        $("#" + rankNames[i].replaceAll(' ','') + "DeltaP2").text((deltap2).toFixed(4) + "%");
-      }
-      $("#totalHands").html(totalHands.toLocaleString());
-      */
-    }
+
     
 
     var continuousTrialsInterval;
@@ -370,7 +306,6 @@
       }      
       for (var i = 0; i < numTrials; i++) recordTrial(v);
       trialsets++;
-      //updateRankCounts();      
     }
 
     function doTrial(v) {
@@ -385,14 +320,11 @@
       c = dealCards(d, 5, v);
       if (v) console.log("Deck now:", d);
 
-      console.log(c.concat(h));
-      c.concat(h).forEach(function (i){
-        //console.log (i & 0b001111)
-        console.log(bin2str(i));
-      })
-
       r = rankHand_bin(c.concat(h), 5, v);
-      if (v) console.log(rankNames[r-1]);
+      if (v) console.log(rankNames[Math.floor(r)-1]);
+
+      console.log(c.concat(h));
+      console.log(binHand2str(c.concat(h)));
 
       d.push(...h);
       d.push(...v1);

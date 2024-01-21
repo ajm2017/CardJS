@@ -76,19 +76,6 @@
     deck = createDeck(false);
     deckbin = createDeck_bin(false);
     
-    var rankNames = [
-      "High Card",
-      "Pair",
-      "Two Pair",
-      "Three of a Kind",
-      "Straight",
-      "Flush",
-      "Full House",
-      "Quads",
-      "Straight Flush",
-      "Royal Flush"
-    ];
-
     var rankCounts = [0,0,0,0,0,0,0,0,0,0]
     
     //https://en.wikipedia.org/wiki/Poker_probability
@@ -226,7 +213,7 @@
     }
 
     function recordTrial(v) {
-      rankCounts[doTrial(v)-1]++;
+      rankCounts[Math.floor(doTrial(v))-1]++;
       totalHands++;
     }
        

@@ -1,6 +1,18 @@
 const cardRanksHI = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const cardRanksLO = ['A','2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const royalRanks = ['10', 'J', 'Q', 'K', 'A'];
+const rankNames = [
+  "High Card",
+  "Pair",
+  "Two Pair",
+  "Three of a Kind",
+  "Straight",
+  "Flush",
+  "Full House",
+  "Quads",
+  "Straight Flush",
+  "Royal Flush"
+];
 
 const royalRanks_bin = [10,11,12,13,1];
 
@@ -29,10 +41,16 @@ function createDeck_bin(v) {
   return d;
 }
 
-function bin2str(c) {
+function binCard2str(c) {
   s = ['♠', '♣', '♥', '♦'][c >> 4];
-  r = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'][(c & 0b001111)-1];
+  r = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'][(c & 0b001111)-1];
   return r+s;
+}
+
+function binHand2str(h) {
+  nh = [];
+  h.forEach(e=>{nh.push(binCard2str(e))}) 
+  return nh;
 }
 
 function shuffleDeck(d, v) {
@@ -59,7 +77,6 @@ function dealCards(d, numCards, v) {
 }
 
 
-//For binary decks only
 function rankHand_bin(hand, handSize, v) {     
   
   function isFlush(hand) {
@@ -238,7 +255,8 @@ function rankHand_bin(hand, handSize, v) {
     generateCombinations(hand, 5, [], 0);
 
     // Inits
-    var bestRankNum = 0;    
+    var bestRankNum = 0;
+    var bestHand = [];
     var hasP = (hasPair_fast(hand)>0);
     //var hasF = hasFlush(hand,5);  //actually worse!
     var isF,isP,hasS;
@@ -261,31 +279,43 @@ function rankHand_bin(hand, handSize, v) {
         } else {
           currentRankNum = 9;
         }
-      } else if (bestRankNum < 8 && isP && hasQuads_fast(currentHand,prank)) {
+      } else if (bestRankNum < 9 && isP && hasQuads_fast(currentHand,prank)) {
         currentRankNum = 8;
-        bail = true; // can't have straight flush now in the 7 hand
-      } else if (bestRankNum < 7 && isP && hasFullHouse_fast(currentHand,prank)) {
+      } else if (bestRankNum < 8 && isP && hasFullHouse_fast(currentHand,prank)) {
         currentRankNum = 7;
-      } else if (bestRankNum < 6 && isF) {
+      } else if (bestRankNum < 7 && isF) {
         currentRankNum = 6;
-      } else if (bestRankNum < 5 && isS) {
+      } else if (bestRankNum < 6 && isS) {
         currentRankNum = 5;
-      } else if (bestRankNum < 4 && isP && hasThreeOfAKind_fast(currentHand,prank)) {
+      } else if (bestRankNum < 5 && isP && hasThreeOfAKind_fast(currentHand,prank)) {
         currentRankNum = 4;
-      } else if (bestRankNum < 3 && isP && hasTwoPairs_fast(currentHand,prank)) {
+      } else if (bestRankNum < 4 && isP && hasTwoPairs_fast(currentHand,prank)) {
         currentRankNum = 3;
-      } else if (bestRankNum < 2 && isP) {
+      } else if (bestRankNum < 3 && isP) {
         currentRankNum = 2;
       } 
+
+      // Add total card value (as decimal), important for comparing same ranks: kickers, better 2 pair, higher flush, straight, etc.
+      handval = 0;
+      currentHand.forEach(element => {
+        r = (element & 0b001111)
+        handval+=r;
+      });
+      currentRankNum = currentRankNum + (handval / 100)
 
       // Check if the current hand has a higher rank
       if (currentRankNum > bestRankNum) {
         bestRankNum = currentRankNum;
+        bestHand = currentHand
       }
       if (bail) break;
     }
 
-    if (v) console.log("Rank:", bestRankNum);
+    if (v) {
+        console.log("Rank:", bestRankNum);
+        console.log("Best Hand:", binHand2str(bestHand));
+    }
+    
     return bestRankNum;
   }
 
