@@ -1,6 +1,7 @@
-const cardRanksHI = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-const cardRanksLO = ['A','2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-const royalRanks = ['10', 'J', 'Q', 'K', 'A'];
+const cardRanksHI = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
+const cardRanksLO = ['A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+const royalRanks = ['T', 'J', 'Q', 'K', 'A'];
+const unicodeSuits = ['♠', '♣', '♥', '♦'];
 const rankNames = [
   "High Card",
   "Pair",
@@ -42,8 +43,8 @@ function createDeck_bin(v) {
 }
 
 function binCard2str(c) {
-  s = ['♠', '♣', '♥', '♦'][c >> 4];
-  r = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'][(c & 0b001111)-1];
+  s = unicodeSuits[c >> 4];
+  r = cardRanksHI[(c & 0b001111)-1];
   return r+s;
 }
 
@@ -51,6 +52,16 @@ function binHand2str(h) {
   nh = [];
   h.forEach(e=>{nh.push(binCard2str(e))}) 
   return nh;
+}
+
+function binHand2type(h) {
+  h1r = (h[0] & 0b001111)-1
+  h2r = (h[1] & 0b001111)-1
+  if (h1r==h2r) return cardRanksHI[h1r] + cardRanksHI[h2r] //pocket pair
+  if (h1r>h2r) { t = cardRanksHI[h1r] + cardRanksHI[h2r] } else { t = cardRanksHI[h2r] + cardRanksHI[h1r] }
+  h1s = h[0] >> 4
+  h2s = h[1] >> 4
+  if (h1s==h2s) { return t+'s'; } else { return t+'o'; }
 }
 
 function shuffleDeck(d, v) {
@@ -72,7 +83,7 @@ function shuffleDeckFY(d, v) {
  
 function dealCards(d, numCards, v) {
   var hand = d.splice(0, numCards);  
-  if (v) console.log("Hand dealt:", hand);      
+  if (v) console.log("Hand dealt:", binHand2str(hand), binHand2type(hand));      
   return hand;
 }
 

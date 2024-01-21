@@ -29,7 +29,8 @@
     function selectRangeForPosition(position,who) {
       $('.' + who + ' .hand-range-button').removeClass('selected');
       const ranges = {
-        'Custom': [], 
+        'ALL': [], 
+        'CUSTOM': [0], 
         'UTG': ['AKs', 'AQs', 'AJs'], 
         'UTG+1': ['AKs', 'AQs', 'AJs'], 
         'UTG+2': [], 
@@ -40,10 +41,12 @@
         'SB': [], 
         'LB': []
       };
-      if (ranges[position]) {
+      if (ranges[position].length !== 0) {
         ranges[position].forEach(hand => {
           $('#' + who + '_' + hand).addClass('selected');
         });
+      } else {
+        $('.hand-range-button' + '.' + who).addClass('selected');
       }
     }
 
@@ -155,6 +158,7 @@
     <div class="hand-range-selector hero">
       Hero Range: &nbsp;
         <div class="quick-select-buttons">
+          <button class="quick-select" data-position="ALL">All</button>
           <button class="quick-select" data-position="CUSTOM">Custom</button>
           <button class="quick-select" data-position="UTG">UTG</button>
           <button class="quick-select" data-position="UTG+1">UTG+1</button>
@@ -177,6 +181,7 @@
     <div class="hand-range-selector villain">
       Villain(s) Range: &nbsp;
         <div class="quick-select-buttons">
+          <button class="quick-select" data-position="ALL">All</button>
           <button class="quick-select" data-position="CUSTOM">Custom</button>
           <button class="quick-select" data-position="UTG">UTG</button>
           <button class="quick-select" data-position="UTG+1">UTG+1</button>
@@ -311,30 +316,29 @@
     function doTrial(v) {
       d = shuffleDeckFY(deckbin,v);
       
-      h = dealCards(d, 2, v);
+      playerHands = []
+      for(i=1;i<=parseInt($('#players').val());i++) {
+        playerHands.push(dealCards(d, 2, v));
+      }
       if (v) console.log("Deck now:", d);
 
-      v1 = dealCards(d, 2, v);
+      common = dealCards(d, 5, v);
       if (v) console.log("Deck now:", d);
 
-      c = dealCards(d, 5, v);
-      if (v) console.log("Deck now:", d);
-
-      r = rankHand_bin(c.concat(h), 5, v);
+      r = rankHand_bin(common.concat(playerHands[0]), 5, v);
       if (v) console.log(rankNames[Math.floor(r)-1]);
 
-      console.log(c.concat(h));
-      console.log(binHand2str(c.concat(h)));
+      console.log(common.concat(playerHands[0]));
+      console.log(binHand2str(common.concat(playerHands[0])));
 
-      d.push(...h);
-      d.push(...v1);
-      d.push(...c);
+      //Put the dealt cards back in the deck
+      playerHands.forEach(e=>{d.push(...e)})
+      d.push(...common);
 
       return r;
     }
 
     function recordTrial(v) {
-      //rankCounts[doTrial(v)-1]++;
       doTrial(v);
       totalHands++;
     }
