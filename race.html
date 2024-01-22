@@ -12,7 +12,7 @@
       cards.forEach((card, index) => {
         tableHTML += '<tr>';                
         cards.slice(0,index).forEach(innerCard => {
-          tableHTML += `<td><button class="hand-range-button ${who}" id="${innerCard}${card}o">${innerCard}${card}o</button></td>`;
+          tableHTML += `<td><button class="hand-range-button ${who}" id="${who}_${innerCard}${card}o">${innerCard}${card}o</button></td>`;
         });
         cards.slice(index).forEach(innerCard => {
           if (card==innerCard) {
@@ -24,6 +24,51 @@
         tableHTML += '</tr>';        
       });
       return tableHTML;
+    }
+
+    let heroRange = [];
+    let villainRange = [];
+
+    function saveRange(who) {
+      if (who=='hero') {
+        heroRange = [];
+        $('.hand-range-button.hero.selected').each(function() {
+          let value = $(this).html();
+          heroRange.push(value);
+        });
+        console.log (heroRange);
+      }
+
+      if (who=='villain') {
+        villainRange = [];
+        $('.hand-range-button.villain.selected').each(function() {
+          let value = $(this).html();
+          villainRange.push(value);
+        });
+        console.log (villainRange);
+      }
+    }
+
+    let resultset = []
+    function initResults() {
+      $('.hand-range-button.hero').each(function() {
+          let value = $(this).html();
+          resultset.push([value,0,0]);
+          //0 - hand type
+          //1 - occurrences
+          //2 - wins
+        });
+    }
+
+    function updateResults() {
+
+      //Opacity of result buttons (based on hero range)
+      $('.hand-range-button.result').css("opacity", "0.2")
+      heroRange.forEach(e=>{
+        $('#result_'+e).css("opacity", ".5"); 
+      })
+
+    
     }
 
     function selectRangeForPosition(position,who) {
@@ -39,7 +84,8 @@
         'CO': [], 
         'BTN': [], 
         'SB': [], 
-        'LB': []
+        'LB': [],
+        'BB': []
       };
       if (ranges[position].length !== 0) {
         ranges[position].forEach(hand => {
@@ -49,6 +95,8 @@
         $('.hand-range-button' + '.' + who).addClass('selected');
       }
     }
+
+
 
   </script>
   
@@ -127,6 +175,10 @@
 
     .hand-range-selector {
       width: 48%; 
+    }
+
+    .hand-range-button.result {
+      opacity: .2;
     }
 
   </style>
@@ -223,10 +275,12 @@
       function displayRange(who) {
         $('#'+who+'Range').html(buildRangeTable(who));  
         if (who!='result') {
-          $('.' + who + '.hand-range-button').on('click', function() {  $(this).toggleClass('selected');  });
+          $('.' + who + '.hand-range-button').on('click', function() {  $(this).toggleClass('selected'); saveRange(who); updateResults(); });
           $('.' + who + ' .quick-select').on('click', function() {
             const position = $(this).data('position');
             selectRangeForPosition(position,who);
+            saveRange(who);
+            updateResults();
           });  
         } 
       }
@@ -234,7 +288,7 @@
       displayRange('hero');
       displayRange('villain');
       displayRange('result');
-
+      initResults();
       
     });
    
@@ -276,7 +330,8 @@
     
 
     var continuousTrialsInterval;
-    var totalHands=0;
+    var games=0;
+    var eligibles=0;
     var trialsets=0;
     var setstotime=10;
     var startTime=null;
@@ -303,11 +358,11 @@
       if (trialsets%setstotime==0) {
         if (startTime!=null) {
           endTime = Date.now();
-          endHands = totalHands;
+          endHands = games;
           calculateHandsPerSecond (endTime - startTime, endHands - startHands);
         }
         startTime = Date.now();
-        startHands = totalHands;
+        startHands = games;
       }      
       for (var i = 0; i < numTrials; i++) recordTrial(v);
       trialsets++;
@@ -315,32 +370,101 @@
 
     function doTrial(v) {
       d = shuffleDeckFY(deckbin,v);
+      resultindex = -1;
+      eligible = false;
       
-      playerHands = []
+      //Deal each player hand
+      playerHands = [];
       for(i=1;i<=parseInt($('#players').val());i++) {
-        playerHands.push(dealCards(d, 2, v));
-      }
-      if (v) console.log("Deck now:", d);
+        h = dealCards(d, 2, v)
+        p = [h,binHand2type(h),0]
+        //0 -- hand array
+        //1 -- hand type
+        //2 -- rank
 
+        
+        if (i==1) {
+          //is Hero eligible?
+          if (heroRange.indexOf(p[1])===-1) {
+            //NO: not in hero range, put cards back in deck and bail
+            d.push(...h);
+            return;
+          }
+
+        } else {
+          //is at least one Villain eligible?
+          if (!eligible && villainRange.indexOf(p[1])>=0) {
+            //YES, don't need to check anymore...
+            eligible = true;
+          }
+        }
+
+        
+        playerHands.push(p);
+      }
+
+      //Eligible game?
+      if (eligible) { 
+        //YES: Get result index and record occurrence
+        eligibles++;        
+        resultindex = resultset.findIndex(group => group[0] === playerHands[0][1])
+        resultset[resultindex][1]++;
+
+      } else {
+        //NO: Villains were eligible, so put cards back in deck and bail
+        playerHands.forEach(e=>{d.push(...e[0])});
+        return;
+      }
+
+      //if (v) console.log("Deck now:", d);
+
+      //Deal common cards
       common = dealCards(d, 5, v);
       if (v) console.log("Deck now:", d);
 
-      r = rankHand_bin(common.concat(playerHands[0]), 5, v);
-      if (v) console.log(rankNames[Math.floor(r)-1]);
+      //Rank each player hand (if in range)      
+      playerHands.forEach(function(e,index){
+        playerHands[index][2] = rankHand_bin(common.concat(e[0]), 5, v, true);
+      });
 
-      console.log(common.concat(playerHands[0]));
-      console.log(binHand2str(common.concat(playerHands[0])));
+      //Compare players
+      bestPlayer=-1;
+      bestRank=0;
+      numChops=1;
+      playerHands.forEach(function(e,index){
+        console.log(binHand2str(e[0]));
+        if (e[2]>bestRank) {
+          bestRank = e[2];
+          bestPlayer = index;
+          numChops=1;
+        } else if (e[2]==bestRank) numChops++;
+      });
+
+      console.log(binHand2str(common));
+      console.log ('Winner', bestPlayer, bestRank, numChops, d)
+
+      //Record hero wins
+      if (bestPlayer==0) {        
+        resultset[resultindex][2]+=(1/numChops);
+      }
+      
+
+      //r = rankHand_bin(common.concat(playerHands[0][0]), 5, v);
+      //r = playerHands[0][2];
+      //if (v) console.log(rankNames[Math.floor(r)-1]);
+      //console.log(common.concat(playerHands[0][0]));
+      //console.log(binHand2str(common.concat(playerHands[0][0])));
 
       //Put the dealt cards back in the deck
-      playerHands.forEach(e=>{d.push(...e)})
+      playerHands.forEach(e=>{d.push(...e[0])})
       d.push(...common);
 
-      return r;
+      return;
     }
 
     function recordTrial(v) {
       doTrial(v);
-      totalHands++;
+      games++;
     }
        
 

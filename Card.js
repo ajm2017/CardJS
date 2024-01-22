@@ -17,6 +17,11 @@ const rankNames = [
 
 const royalRanks_bin = [10,11,12,13,1];
 
+//For Bin Ranks, aces are LO
+const subranks = [.1, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 0.000001, 0.00001, 0.0001, 0.001, 0.01]
+
+
+
 function createDeck(v) {
   //Alpha/String deck creator
   //Logical, but slower data structure to work with.
@@ -44,7 +49,7 @@ function createDeck_bin(v) {
 
 function binCard2str(c) {
   s = unicodeSuits[c >> 4];
-  r = cardRanksHI[(c & 0b001111)-1];
+  r = cardRanksLO[(c & 0b001111)-1];
   return r+s;
 }
 
@@ -57,8 +62,8 @@ function binHand2str(h) {
 function binHand2type(h) {
   h1r = (h[0] & 0b001111)-1
   h2r = (h[1] & 0b001111)-1
-  if (h1r==h2r) return cardRanksHI[h1r] + cardRanksHI[h2r] //pocket pair
-  if (h1r>h2r) { t = cardRanksHI[h1r] + cardRanksHI[h2r] } else { t = cardRanksHI[h2r] + cardRanksHI[h1r] }
+  if (h1r==h2r) return cardRanksLO[h1r] + cardRanksLO[h2r] //pocket pair
+  if (h1r>h2r) { t = cardRanksLO[h1r] + cardRanksLO[h2r] } else { t = cardRanksLO[h2r] + cardRanksLO[h1r] }
   h1s = h[0] >> 4
   h2s = h[1] >> 4
   if (h1s==h2s) { return t+'s'; } else { return t+'o'; }
@@ -88,7 +93,7 @@ function dealCards(d, numCards, v) {
 }
 
 
-function rankHand_bin(hand, handSize, v) {     
+function rankHand_bin(hand, handSize, v, dosubs) {     
   
   function isFlush(hand) {
     // Checks if a 5 card hand IS a flush
@@ -246,7 +251,7 @@ function rankHand_bin(hand, handSize, v) {
 
 
   // Function to find the best 5-card hand RANK from the given hand
-  function findBestRank(hand) {
+  function findBestRank(hand, dosubs) {
     var possibleHands = [];
 
     // Generate all possible combinations of 5-card hands from the given hand
@@ -306,13 +311,16 @@ function rankHand_bin(hand, handSize, v) {
         currentRankNum = 2;
       } 
 
-      // Add total card value (as decimal), important for comparing same ranks: kickers, better 2 pair, higher flush, straight, etc.
-      handval = 0;
-      currentHand.forEach(element => {
-        r = (element & 0b001111)
-        handval+=r;
-      });
-      currentRankNum = currentRankNum + (handval / 100)
+      // Add subrank value (as decimals), important for comparing same ranks: kickers, better 2 pair, higher flush, straight, etc.
+      //A==.1, K==.01, ...      
+      if (dosubs) {
+        let subrank = 0;
+        currentHand.forEach(element => {
+          r = (element & 0b001111)-1
+          subrank+=subranks[r];
+        });
+        currentRankNum = currentRankNum+subrank
+      }      
 
       // Check if the current hand has a higher rank
       if (currentRankNum > bestRankNum) {
@@ -332,7 +340,7 @@ function rankHand_bin(hand, handSize, v) {
 
   // Check if the hand size is valid
   if (handSize === 5) {
-    return findBestRank(hand);
+    return findBestRank(hand, dosubs);
   } else {
     console.log("Invalid hand size for ranking");
   }
