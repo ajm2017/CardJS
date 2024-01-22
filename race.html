@@ -102,16 +102,16 @@
       const ranges = {
         'ALL': [], 
         'CUSTOM': [0], 
-        'UTG': ['AKs', 'AQs', 'AJs'], 
-        'UTG+1': ['AKs', 'AQs', 'AJs'], 
-        'UTG+2': [], 
-        'LJ': [], 
-        'HJ': [], 
-        'CO': [], 
-        'BTN': [], 
-        'SB': [], 
-        'LB': [],
-        'BB': []
+        'UTG':    ['AA','KK','QQ','JJ','TT','99','88','77','AKo','AQo','AKs','AQs','AJs','ATs','A5s','KQs','KJs','KTs','QJs','QTs','JTs','J9s','98s','T9s'], 
+        'UTG+1':  ['AA','KK','QQ','JJ','TT','99','88','77','AKo','AQo','AKs','AQs','AJs','ATs','A5s','KQs','KJs','KTs','QJs','QTs','JTs','J9s','98s','T9s'], 
+        'UTG+2':  ['AA','KK','QQ','JJ','TT','99','88','77','AKo','AQo','AJo','AKs','AQs','AJs','ATs','A9s','A8s','A5s','A4s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','98s','T9s'], 
+        'LJ':     ['AA','KK','QQ','JJ','TT','99','88','77','66','55','AKo','AQo','AJo','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','87s','76s'], 
+        'HJ':     ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','AKo','AQo','ATo','AJo','KQo','KJo','QJo','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','87s','76s','65s'], 
+        'CO':     ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKo','AQo','ATo','AJo','KQo','KJo','KTo','QJo','QTo','JTo','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','Q8s','JTs','J9s','J8s','T9s','T8s','98s','97s','87s','86s','76s','65s','54s'], 
+        'BTN':    ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKo','AQo','ATo','A9o','A8o','A7o','A6o','A5o','A4o','A3o','A2o','AJo','KQo','KJo','KTo','K9o','QJo','QTo','Q9o','JTo','J9o','T9o','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','JTs','J9s','J8s','J7s','J6s','T9s','T8s','T7s','T6s','98s','97s','96s','87s','86s','85s','76s','75s','65s','54s','43s'], 
+        'SB':     [], 
+        'LB':     [],
+        'BB':     []
       };
       if (ranges[position].length !== 0) {
         ranges[position].forEach(hand => {
