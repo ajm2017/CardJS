@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hold'em Range Race</title>
+  <title>Card.js : Hold'em Range Race</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <script>
@@ -109,6 +109,14 @@
     }
 
     function selectRangeForPosition(position,who) {
+      if (position=='INV') {
+          $('.hand-range-button' + '.' + who + '.selected').addClass('temp');
+          $('.hand-range-button' + '.' + who + ':not(.selected)').addClass('selected');
+          $('.hand-range-button' + '.' + who + '.temp').removeClass('selected');
+          $('.hand-range-button' + '.' + who + '.temp').removeClass('temp');
+          return;
+      }
+
       $('.' + who + ' .hand-range-button').removeClass('selected');
       const ranges = {
         'ALL': [], 
@@ -127,8 +135,8 @@
         ranges[position].forEach(hand => {
           $('#' + who + '_' + hand).addClass('selected');
         });
-      } else {
-        $('.hand-range-button' + '.' + who).addClass('selected');
+      } else {        
+          $('.hand-range-button' + '.' + who).addClass('selected');        
       }
     }
 
@@ -200,12 +208,12 @@
     .quick-select-buttons {
       display: flex; 
       flex-wrap: nowrap; 
-      margin-left: 10px; 
+      margin-left: 5px; 
     }
 
     .quick-select-buttons button {
-      margin-right: 5px;
-      font-size: 0.6em;
+      margin-right: 4px;
+      font-size: 0.5em;
     }
 
     .range-selectors-container {
@@ -228,8 +236,6 @@
 
 </head>
 <body>
-
-
 
   <div class="player-selection">
     <label for="players">Players:</label>
@@ -263,6 +269,7 @@
           <button class="quick-select" data-position="BTN">BTN</button>
           <button class="quick-select" data-position="SB">SB</button>
           <button class="quick-select" data-position="BB">BB</button>
+          <button class="quick-select" data-position="INV">Inverse</button>
         </div>
         <br>
         
@@ -286,6 +293,7 @@
           <button class="quick-select" data-position="BTN">BTN</button>
           <button class="quick-select" data-position="SB">SB</button>
           <button class="quick-select" data-position="BB">BB</button>
+          <button class="quick-select" data-position="INV">Inverse</button>
         </div>
         <br>
         
@@ -294,8 +302,6 @@
       </table>
     </div>
   </div>
-  
-  
   
   
   <hr size="1" noshade>  
@@ -332,10 +338,8 @@
       displayRange('result');
       
     });
-   
     
   </script>
-
 
   <hr size="1" noshade>
 
@@ -346,8 +350,6 @@
   
   <hr size="1" noshade>
 
-
-
   <br><div class="countlabel">Total Games:</div><div class="countnum" id="totalGames"></div>
   <br><div class="countlabel">Eligible Games:</div><div class="countnum" id="eligibleGames"></div>
   <br><div class="countlabel">Games / s (GPS):</div><div class="countnum" id="GPS">0</div>
@@ -355,20 +357,9 @@
 
   <script src="./Card.js"></script>
   <script>
-    var deck = [];
     var deckbin = [];
-
-    deck = createDeck(false);
     deckbin = createDeck_bin(false);
     
-        
-    $(document).ready(function() {
-    
-    });
-
-
-    
-
     var continuousTrialsInterval;
     var games=0;
     var eligibles=0;

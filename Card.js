@@ -21,7 +21,6 @@ const royalRanks_bin = [10,11,12,13,1];
 const subranks = [.1, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
 
 
-
 function createDeck(v) {
   //Alpha/String deck creator
   //Logical, but slower data structure to work with.
@@ -276,7 +275,6 @@ function rankHand_bin(hand, handSize, v, dosubs) {
     var bestRankNum = 0;
     var bestHand = [];
     var hasP = (hasPair_fast(hand)>0);
-    //var hasF = hasFlush(hand,5);  //actually worse!
     var isF,isP,hasS;
     
     for (var i = 0; i < possibleHands.length; i++) {

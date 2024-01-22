@@ -1,3 +1,0 @@
- - use prank for three of a kind and full
- - faster straight function, probably
- - faster isRoyal
