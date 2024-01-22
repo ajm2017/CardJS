@@ -18,7 +18,7 @@ const rankNames = [
 const royalRanks_bin = [10,11,12,13,1];
 
 //For Bin Ranks, aces are LO
-const subranks = [.1, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 0.000001, 0.00001, 0.0001, 0.001, 0.01]
+const subranks = [.1, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
 
 
 
@@ -62,8 +62,10 @@ function binHand2str(h) {
 function binHand2type(h) {
   h1r = (h[0] & 0b001111)-1
   h2r = (h[1] & 0b001111)-1
-  if (h1r==h2r) return cardRanksLO[h1r] + cardRanksLO[h2r] //pocket pair
-  if (h1r>h2r) { t = cardRanksLO[h1r] + cardRanksLO[h2r] } else { t = cardRanksLO[h2r] + cardRanksLO[h1r] }
+  if (h1r==h2r) return cardRanksLO[h1r] + cardRanksLO[h2r]; //pocket pair
+  if (h1r==0) { t = cardRanksLO[h1r] + cardRanksLO[h2r]; } //first card is ace
+  else if (h2r==0) { t = cardRanksLO[h2r] + cardRanksLO[h1r]; } //2nd card is ace
+  else if (h1r>h2r) { t = cardRanksLO[h1r] + cardRanksLO[h2r] } else { t = cardRanksLO[h2r] + cardRanksLO[h1r] }
   h1s = h[0] >> 4
   h2s = h[1] >> 4
   if (h1s==h2s) { return t+'s'; } else { return t+'o'; }
