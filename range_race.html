@@ -47,12 +47,14 @@
         }
       });
 
-      //console.log (types);
       types.forEach(function(v,k){
        $(`#${who}_${k}`).find('.combo-num').html(v);
        $(`#${who}_${k}`).find('.combo-perc').html((Math.round(v/combos.length*10000,5)/100).toLocaleString()+'%');
       });
 
+      $(`#${who}_selcombos`).html(0);
+      $(`#${who}_totcombos`).html(combos.length);
+      $(`#${who}_rangeperc`).html(0);
     }
 
     function buildRangeButton(who, innerCard, card, ext) {
@@ -70,23 +72,28 @@
     let villainRange = [];
 
     function saveRange(who) {
+      let combos=0;
       if (who=='hero') {
         heroRange = [];
-        $('.hand-range-button.hero.selected').each(function() {
+        $(`.hand-range-button.${who}.selected`).each(function() {
           let value = $(this).data('type').toLocaleString();
+          combos += parseInt($(this).find('.combo-num').html());
           heroRange.push(value);
         });
-        console.log (heroRange);
+        console.log (heroRange, combos);
       }
 
       if (who=='villain') {
         villainRange = [];
-        $('.hand-range-button.villain.selected').each(function() {
+        $(`.hand-range-button.${who}.selected`).each(function() {
           let value = $(this).data('type').toLocaleString();
+          combos += parseInt($(this).find('.combo-num').html());
           villainRange.push(value);
         });
-        console.log (villainRange);
+        console.log (villainRange, combos);        
       }
+      $(`#${who}_selcombos`).html(combos);
+      $(`#${who}_rangeperc`).html(Math.round(combos / parseInt($(`#${who}_totcombos`).html())*10000)/100);
     }
 
     let resultset = []
@@ -333,6 +340,7 @@
       <table class="rangematrix" id="heroRange">
         <tbody></tbody>
       </table>
+      Selected:&nbsp; <span id="hero_selcombos"></span> / <span id="hero_totcombos"></span> &nbsp; (<span id="hero_rangeperc"></span>%)
     </div>
     
     
@@ -357,6 +365,7 @@
       <table class="rangematrix" id="villainRange">
         <tbody></tbody>
       </table>
+      Selected:&nbsp; <span id="villain_selcombos"></span> / <span id="villain_totcombos"></span> &nbsp; (<span id="villain_rangeperc"></span>%)
     </div>
   </div>
   
