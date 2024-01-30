@@ -12,18 +12,58 @@
       cards.forEach((card, index) => {
         tableHTML += '<tr>';                
         cards.slice(0,index).forEach(innerCard => {
-          tableHTML += `<td><button class="hand-range-button ${who}" id="${who}_${innerCard}${card}o">${innerCard}${card}o</button></td>`;
+          tableHTML += buildRangeButton(who, innerCard, card, 'o');
         });
         cards.slice(index).forEach(innerCard => {
           if (card==innerCard) {
-            tableHTML += `<td><button class="hand-range-button pocketpair ${who}" id="${who}_${card}${innerCard}">${card}${innerCard}</button></td>`;
+            tableHTML += buildRangeButton(who, card, innerCard, '');
           } else {
-            tableHTML += `<td><button class="hand-range-button ${who}" id="${who}_${card}${innerCard}s">${card}${innerCard}s</button></td>`;
+            tableHTML += buildRangeButton(who, card, innerCard, 's');
           }          
         });       
         tableHTML += '</tr>';        
       });
       return tableHTML;
+    }
+
+    function displayCombos(who, d){
+      let combos = [];
+      let types = new Map();
+      d.forEach(function(c1,a){
+        d.forEach(function(c2,b){
+          if (b>a) {
+            combos.push([c1,c2]);            
+          }
+        });
+      });
+      
+      combos.forEach(h=>{
+        let thistype = binHand2type(h);
+        if (types.has(thistype)) {
+          cnt = types.get(thistype);
+          types.set(thistype, cnt+1);
+        } else {
+          types.set (thistype,1);
+        }
+      });
+
+      //console.log (types);
+      types.forEach(function(v,k){
+       $(`#${who}_${k}`).find('.combo-num').html(v);
+       $(`#${who}_${k}`).find('.combo-perc').html((Math.round(v/combos.length*10000,5)/100).toLocaleString()+'%');
+      });
+
+    }
+
+    function buildRangeButton(who, innerCard, card, ext) {
+      let comboText = `<span class="combo-num">abc</span><span class="combo-perc">xyz</span>`;
+      if (who!='hero' && who!='villain') comboText = '';
+      return `<td>
+        <button class="hand-range-button ${who}" id="${who}_${innerCard}${card}${ext}" data-type="${innerCard}${card}${ext}">
+          ${innerCard}${card}${ext}
+          ${comboText}
+        </button>
+        </td>`;
     }
 
     let heroRange = [];
@@ -33,7 +73,7 @@
       if (who=='hero') {
         heroRange = [];
         $('.hand-range-button.hero.selected').each(function() {
-          let value = $(this).html();
+          let value = $(this).data('type').toLocaleString();
           heroRange.push(value);
         });
         console.log (heroRange);
@@ -42,7 +82,7 @@
       if (who=='villain') {
         villainRange = [];
         $('.hand-range-button.villain.selected').each(function() {
-          let value = $(this).html();
+          let value = $(this).data('type').toLocaleString();
           villainRange.push(value);
         });
         console.log (villainRange);
@@ -52,7 +92,7 @@
     let resultset = []
     function initResults() {
       $('.hand-range-button.hero').each(function() {
-          let value = $(this).html();
+          let value = $(this).data('type').toLocaleString();
           resultset.push([value,0,0]);
           //0 - hand type
           //1 - occurrences
@@ -185,10 +225,27 @@
         text-align: center;             
         border-radius: 5px;
         border-width: 1px;
+        position:relative;
     }
 
     .hand-range-button.result {
       background: linear-gradient(to right, #f0f0f0 50%, #f0f0f0 50%);
+    }
+
+    .combo-num {
+      position: absolute;
+      top: 0; 
+      right: 0; 
+      font-size: 0.6em; 
+      margin: 2px; 
+    }
+
+    .combo-perc {
+      position: absolute;
+      top: 0; 
+      left: 0; 
+      font-size: 0.6em; 
+      margin: 2px; 
     }
 
     .pocketpair {
@@ -330,12 +387,17 @@
             saveRange(who);
             resetResults();
           });  
-        } 
+          var deckbin = [];
+          deckbin = createDeck_bin(false);
+          displayCombos(who, deckbin);
+        }        
       }
       
       displayRange('hero');
       displayRange('villain');
       displayRange('result');
+
+
       
     });
     
