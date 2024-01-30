@@ -1,10 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Card.js : Hold'em Range Race</title>
+  <title>Card.js : </title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+  <script src="./includes/Card.js"></script>
+  <link rel="stylesheet" href="./includes/style.css">
+  <script>let titleSuffix = 'Hold\'em Range Race';</script>
+  <script src="includes/topbar.js" defer></script>
   <script>
+
+  $(document).ready(function() {
+
+    function displayRange(who) {
+      $('#'+who+'Range').html(buildRangeTable(who));  
+      if (who!='result') {
+        $('.' + who + '.hand-range-button').on('click', function() {  $(this).toggleClass('selected'); saveRange(who); resetResults(); });
+        $('.' + who + ' .quick-select').on('click', function() {
+          const position = $(this).data('position');
+          selectRangeForPosition(position,who);
+          saveRange(who);
+          resetResults();
+        });  
+        displayCombos(who, deckbin);
+      }        
+    }
+
+    displayRange('hero');
+    displayRange('villain');
+    displayRange('result');
+
+  });
+
 
     function buildRangeTable(who) {
       const cards = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
@@ -187,120 +213,142 @@
       }
     }
 
-
-
-  </script>
+  var deckbin = [];
+  deckbin = createDeck_bin(false);
   
-  <style>
-    #rankTable {
-      width: 100%;
-      border-collapse: collapse;
-    }
+  var continuousTrialsInterval;
+  var games=0;
+  var eligibles=0;
+  var trialsets=0;
+  var setstotime=10;
+  var startTime=null;
+  var startHands=null;
+  var endHands=null;
+  var fastest_handspeed=0;
+
+  function continuousTrials(num, v) {     
+    continuousTrialsInterval = setInterval(() => { runTrials(num, v); }, 1);
+  }
+  
+  function stopContinuousTrials() {
+    clearInterval(continuousTrialsInterval);
+  }
+
+  function calculateHandsPerSecond(m,h) {
+    var handsPerSecond = h / (m / 1000);
+    if (handsPerSecond > fastest_handspeed) fastest_handspeed = handsPerSecond
+    $("#GPS").html        (parseInt(handsPerSecond).toLocaleString());
+    $("#fastestGPS").html (parseInt(fastest_handspeed).toLocaleString());
+  }
+
+  function runTrials(numTrials, v) {      
+    if (trialsets%setstotime==0) {
+      if (startTime!=null) {
+        endTime = Date.now();
+        endHands = games;
+        calculateHandsPerSecond (endTime - startTime, endHands - startHands);
+      }
+      startTime = Date.now();
+      startHands = games;
+    }      
+    for (var i = 0; i < numTrials; i++) recordTrial(v);
+    trialsets++;
+    updateResults();
+  }
+
+  function doTrial(v) {
+    d = shuffleDeckFY(deckbin,v);
+    resultindex = -1;
+    eligible = false;
     
-    #rankTable th,
-    #rankTable td {
-      padding: 8px;
-      text-align: center;
-      border: 1px solid #ccc;
-    }
-    
-    #rankTable th {
-      background-color: #f2f2f2;
-      font-weight: bold;
-    }
+    //Deal each player hand
+    playerHands = [];
+    for(i=1;i<=parseInt($('#players').val());i++) {
+      h = dealCards(d, 2, v)
+      p = [h,binHand2type(h),0]
+      //0 -- hand array
+      //1 -- hand type
+      //2 -- rank
+      
+      if (i==1) {
+        //is Hero eligible?
+        if (heroRange.indexOf(p[1])===-1) {
+          //NO: not in hero range, put cards back in deck and bail
+          d.push(...h);
+          return;
+        }
 
-    #rankTable th {
-      cursor: pointer;
-    }
-
-    .countlabel {
-      width:150px;
-      font-weight:bold;
-      display:inline-flex;
-    }
-
-    .countnum {
-      width:150px;
-      display:inline-flex;
-    }
-
-    .hand-range-button {
-        width: 30px;
-        height: 30px;
-        margin: 0px;
-        font-size: 0.6em;
-        text-align: center;             
-        border-radius: 5px;
-        border-width: 1px;
-        position:relative;
+      } else {
+        //is at least one Villain eligible?
+        if (!eligible && villainRange.indexOf(p[1])>=0) {
+          //YES, don't need to check anymore...
+          eligible = true;
+        }
+      }
+      
+      playerHands.push(p);
     }
 
-    .hand-range-button.result {
-      background: linear-gradient(to right, #f0f0f0 50%, #f0f0f0 50%);
+    //Eligible game?
+    if (eligible) { 
+      //YES: Get result index and record occurrence
+      eligibles++;        
+      resultindex = resultset.findIndex(group => group[0] === playerHands[0][1])
+      resultset[resultindex][1]++;
+
+    } else {
+      //NO: Villains were eligible, so put cards back in deck and bail
+      playerHands.forEach(e=>{d.push(...e[0])});
+      return;
     }
 
-    .combo-num {
-      position: absolute;
-      top: 0; 
-      right: 0; 
-      font-size: 0.6em; 
-      margin: 2px; 
-    }
+    //Deal common cards
+    common = dealCards(d, 5, v);
+    if (v) console.log("Deck now:", d);
 
-    .combo-perc {
-      position: absolute;
-      top: 0; 
-      left: 0; 
-      font-size: 0.6em; 
-      margin: 2px; 
-    }
+    //Rank each player hand (if in range)      
+    playerHands.forEach(function(e,index){
+      playerHands[index][2] = rankHand_bin(common.concat(e[0]), 5, v, true);
+    });
 
-    .pocketpair {
-      font-weight:bold;
-    }   
+    //Compare players
+    bestPlayer=-1;
+    bestRank=0;
+    numChops=1;
+    playerHands.forEach(function(e,index){
+      if (v) console.log(binHand2str(e[0]));
+      if (e[2]>bestRank) {
+        bestRank = e[2];
+        bestPlayer = index;
+        numChops=1;
+      } else if (e[2]==bestRank) numChops++;
+    });
 
-    .selected {
-      background-color: #4CAF50; 
-      color: white;
-    }
+    if (v) console.log(binHand2str(common));      
+    if (v) console.log ('Winner', bestPlayer, bestRank, numChops, d)
 
-    .hand-range-selector {
-      align-items: center; 
-      flex-wrap: wrap; 
-    }
+    //Record hero wins
+    if (bestPlayer==0) {        
+      resultset[resultindex][2]+=(1/numChops);
+    }      
 
-    .quick-select-buttons {
-      display: flex; 
-      flex-wrap: nowrap; 
-      margin-left: 5px; 
-    }
+    //Put the dealt cards back in the deck
+    playerHands.forEach(e=>{d.push(...e[0])})
+    d.push(...common);
 
-    .quick-select-buttons button {
-      margin-right: 4px;
-      font-size: 0.5em;
-    }
+    return;
+  }
 
-    .range-selectors-container {
-      display: flex;
-      flex-direction: row; 
-      justify-content: space-between; 
-      align-items: flex-start; 
-    }
+  function recordTrial(v) {
+    doTrial(v);
+    games++;
+  }
 
-    .hand-range-selector {
-      width: 48%; 
-    }
-
-    .hand-range-button.result {
-      opacity: .2;
-    }
-
-  </style>
-
+</script>
 
 </head>
 <body>
-
+  <br><br>
   <div class="player-selection">
     <label for="players">Players:</label>
     <select id="players">
@@ -341,8 +389,7 @@
         <tbody></tbody>
       </table>
       Selected:&nbsp; <span id="hero_selcombos"></span> / <span id="hero_totcombos"></span> &nbsp; (<span id="hero_rangeperc"></span>%)
-    </div>
-    
+    </div>    
     
     <div class="hand-range-selector villain">
       Villain(s) Range: &nbsp;
@@ -370,197 +417,26 @@
   </div>
   
   
-  <hr size="1" noshade>  
-
-
+  <hr size="1" noshade>
   <div class="hand-range-selector results">
-    Results: 
-      
+    Results:       
     <table class="rangematrix" id="resultRange">
       <tbody></tbody>
     </table>
   </div>
 
-  
-  <script>
-
-    $(document).ready(function() {
-
-      function displayRange(who) {
-        $('#'+who+'Range').html(buildRangeTable(who));  
-        if (who!='result') {
-          $('.' + who + '.hand-range-button').on('click', function() {  $(this).toggleClass('selected'); saveRange(who); resetResults(); });
-          $('.' + who + ' .quick-select').on('click', function() {
-            const position = $(this).data('position');
-            selectRangeForPosition(position,who);
-            saveRange(who);
-            resetResults();
-          });  
-          var deckbin = [];
-          deckbin = createDeck_bin(false);
-          displayCombos(who, deckbin);
-        }        
-      }
-      
-      displayRange('hero');
-      displayRange('villain');
-      displayRange('result');
-
-
-      
-    });
-    
-  </script>
-
   <hr size="1" noshade>
-
   <button onclick="recordTrial(true); updateResults();">1 Trial</button>
   <button onclick="runTrials(10000, false);">10,000 Trials</button>
   <button onclick="continuousTrials(5000, false); $('#stopButton').prop('disabled', false);">Continuous</button>
   <button id="stopButton" onclick="stopContinuousTrials(); $(this).prop('disabled', true);" disabled>Stop</button>
   
   <hr size="1" noshade>
-
   <br><div class="countlabel">Total Games:</div><div class="countnum" id="totalGames"></div>
   <br><div class="countlabel">Eligible Games:</div><div class="countnum" id="eligibleGames"></div>
   <br><div class="countlabel">Games / s (GPS):</div><div class="countnum" id="GPS">0</div>
   <br><div class="countlabel">Best GPS:</div><div class="countnum" id="fastestGPS">0</div>
 
-  <script src="./Card.js"></script>
-  <script>
-    var deckbin = [];
-    deckbin = createDeck_bin(false);
-    
-    var continuousTrialsInterval;
-    var games=0;
-    var eligibles=0;
-    var trialsets=0;
-    var setstotime=10;
-    var startTime=null;
-    var startHands=null;
-    var endHands=null;
-    var fastest_handspeed=0;
-
-    function continuousTrials(num, v) {     
-      continuousTrialsInterval = setInterval(() => { runTrials(num, v); }, 1);
-    }
-    
-    function stopContinuousTrials() {
-      clearInterval(continuousTrialsInterval);
-    }
-
-    function calculateHandsPerSecond(m,h) {
-      var handsPerSecond = h / (m / 1000);
-      if (handsPerSecond > fastest_handspeed) fastest_handspeed = handsPerSecond
-      $("#GPS").html        (parseInt(handsPerSecond).toLocaleString());
-      $("#fastestGPS").html (parseInt(fastest_handspeed).toLocaleString());
-    }
-
-    function runTrials(numTrials, v) {      
-      if (trialsets%setstotime==0) {
-        if (startTime!=null) {
-          endTime = Date.now();
-          endHands = games;
-          calculateHandsPerSecond (endTime - startTime, endHands - startHands);
-        }
-        startTime = Date.now();
-        startHands = games;
-      }      
-      for (var i = 0; i < numTrials; i++) recordTrial(v);
-      trialsets++;
-      updateResults();
-    }
-
-    function doTrial(v) {
-      d = shuffleDeckFY(deckbin,v);
-      resultindex = -1;
-      eligible = false;
-      
-      //Deal each player hand
-      playerHands = [];
-      for(i=1;i<=parseInt($('#players').val());i++) {
-        h = dealCards(d, 2, v)
-        p = [h,binHand2type(h),0]
-        //0 -- hand array
-        //1 -- hand type
-        //2 -- rank
-        
-        if (i==1) {
-          //is Hero eligible?
-          if (heroRange.indexOf(p[1])===-1) {
-            //NO: not in hero range, put cards back in deck and bail
-            d.push(...h);
-            return;
-          }
-
-        } else {
-          //is at least one Villain eligible?
-          if (!eligible && villainRange.indexOf(p[1])>=0) {
-            //YES, don't need to check anymore...
-            eligible = true;
-          }
-        }
-        
-        playerHands.push(p);
-      }
-
-      //Eligible game?
-      if (eligible) { 
-        //YES: Get result index and record occurrence
-        eligibles++;        
-        resultindex = resultset.findIndex(group => group[0] === playerHands[0][1])
-        resultset[resultindex][1]++;
-
-      } else {
-        //NO: Villains were eligible, so put cards back in deck and bail
-        playerHands.forEach(e=>{d.push(...e[0])});
-        return;
-      }
-
-      //Deal common cards
-      common = dealCards(d, 5, v);
-      if (v) console.log("Deck now:", d);
-
-      //Rank each player hand (if in range)      
-      playerHands.forEach(function(e,index){
-        playerHands[index][2] = rankHand_bin(common.concat(e[0]), 5, v, true);
-      });
-
-      //Compare players
-      bestPlayer=-1;
-      bestRank=0;
-      numChops=1;
-      playerHands.forEach(function(e,index){
-        if (v) console.log(binHand2str(e[0]));
-        if (e[2]>bestRank) {
-          bestRank = e[2];
-          bestPlayer = index;
-          numChops=1;
-        } else if (e[2]==bestRank) numChops++;
-      });
-
-      if (v) console.log(binHand2str(common));      
-      if (v) console.log ('Winner', bestPlayer, bestRank, numChops, d)
-
-      //Record hero wins
-      if (bestPlayer==0) {        
-        resultset[resultindex][2]+=(1/numChops);
-      }      
-
-      //Put the dealt cards back in the deck
-      playerHands.forEach(e=>{d.push(...e[0])})
-      d.push(...common);
-
-      return;
-    }
-
-    function recordTrial(v) {
-      doTrial(v);
-      games++;
-    }
-       
-
-  </script>
-
+  
 </body>
 </html>

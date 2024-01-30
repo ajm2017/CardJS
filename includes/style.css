@@ -1,0 +1,104 @@
+
+
+#rankTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  #rankTable th,
+  #rankTable td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ccc;
+  }
+  
+  #rankTable th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+
+  #rankTable th {
+    cursor: pointer;
+  }
+
+  .countlabel {
+    width:150px;
+    font-weight:bold;
+    display:inline-flex;
+  }
+
+  .countnum {
+    width:150px;
+    display:inline-flex;
+  }
+
+  .hand-range-button {
+      width: 30px;
+      height: 30px;
+      margin: 0px;
+      font-size: 0.6em;
+      text-align: center;             
+      border-radius: 5px;
+      border-width: 1px;
+      position:relative;
+  }
+
+  .hand-range-button.result {
+    background: linear-gradient(to right, #f0f0f0 50%, #f0f0f0 50%);
+  }
+
+  .combo-num {
+    position: absolute;
+    top: 0; 
+    right: 0; 
+    font-size: 0.6em; 
+    margin: 2px; 
+  }
+
+  .combo-perc {
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    font-size: 0.6em; 
+    margin: 2px; 
+  }
+
+  .pocketpair {
+    font-weight:bold;
+  }   
+
+  .selected {
+    background-color: #4CAF50; 
+    color: white;
+  }
+
+  .hand-range-selector {
+    align-items: center; 
+    flex-wrap: wrap; 
+  }
+
+  .quick-select-buttons {
+    display: flex; 
+    flex-wrap: nowrap; 
+    margin-left: 5px; 
+  }
+
+  .quick-select-buttons button {
+    margin-right: 4px;
+    font-size: 0.5em;
+  }
+
+  .range-selectors-container {
+    display: flex;
+    flex-direction: row; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+  }
+
+  .hand-range-selector {
+    width: 48%; 
+  }
+
+  .hand-range-button.result {
+    opacity: .2;
+  }

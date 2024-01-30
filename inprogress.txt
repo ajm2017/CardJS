@@ -1,0 +1,5 @@
+  Range Race:
+   - results: aggregate win % (equity)
+   - preset flop
+   - preset burn card
+   - rollover button show combos

@@ -2,46 +2,16 @@
 <html>
 <head>
   <title>Card.js : Hold'em Hands Occurence</title>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  
-  <style>
-    #rankTable {
-      width: 100%;
-      border-collapse: collapse;
-    }
+  <link rel="stylesheet" href="./includes/style.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>  
+  <script src="./includes/Card.js"></script>
+  <script>let titleSuffix = 'Home';</script>
+  <script src="includes/topbar.js" defer></script> 
     
-    #rankTable th,
-    #rankTable td {
-      padding: 8px;
-      text-align: center;
-      border: 1px solid #ccc;
-    }
-    
-    #rankTable th {
-      background-color: #f2f2f2;
-      font-weight: bold;
-    }
-
-    #rankTable th {
-      cursor: pointer;
-    }
-
-    .countlabel {
-      width:150px;
-      font-weight:bold;
-      display:inline-flex;
-    }
-
-    .countnum {
-      width:150px;
-      display:inline-flex;
-    }
-
-  </style>
 </head>
 <body>
 
-
+  <br><br>
   <button onclick="recordTrial(true); updateRankCounts();">1 Trial</button>
   <button onclick="runTrials(10000, false);">10,000 Trials</button>
   <button onclick="continuousTrials(5000, false); $('#stopButton').prop('disabled', false);">Continuous</button>
@@ -67,8 +37,7 @@
   <br><div class="countlabel">Total Hands:</div><div class="countnum" id="totalHands"></div>
   <br><div class="countlabel">Hands / s (HPS):</div><div class="countnum" id="HPS">0</div>
   <br><div class="countlabel">Best HPS:</div><div class="countnum" id="fastestHPS">0</div>
-
-  <script src="./Card.js"></script>
+  
   <script>
     var deck = [];
     var deckbin = [];
