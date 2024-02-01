@@ -88,8 +88,6 @@
     color: white;
   }
 
-
-
   .hand-range-selector {
     align-items: center; 
     flex-wrap: wrap; 
@@ -168,5 +166,50 @@
   .spades {  color:black; }
   .diamonds {  color:blue; }
   
+  
+  .card-container-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 9vh; 
+  }
+
+  .card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: auto;   
+  }
+
+  .cardtitle {
+    width: 100%;
+    text-align: left;
+    margin-left: 5px;
+  }
+  
+  .hero-cards, .common-cards, .burn-card, .villain-cards {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+    align-items: flex-start; 
+  }
+  
+  .cardpreselect {
+    width: 60px;
+    height: 90px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .cardpreselect.empty::before {
+    content: "+";
+    font-size: 2em;
+    color: #ccc;
+  }
   
   
