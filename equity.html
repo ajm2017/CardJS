@@ -40,7 +40,6 @@
         //Create overlay contents
         let comboDivs = buildComboDivs(theseCombos);
         $('.card-combo-overlay').html(comboDivs);
-        //console.log (comboDivs);
 
         var overlayWidth = $('.card-combo-overlay').outerWidth();
         var pageWidth = $(window).width();
@@ -52,7 +51,7 @@
         }
 
         $('.card-combo-overlay').css({
-          top: e.pageY - 20, // Slightly above the cursor
+          top: e.pageY - 20, 
           left: overlayX
         }).fadeIn(100);
       }, 1500);
@@ -60,6 +59,27 @@
       clearTimeout(hoverTimer); // Cancel the timer if mouse leaves before overlay appears
       $('.card-combo-overlay').fadeOut(50); // Hide the overlay
     });
+
+    $('.cardpreselect').on('click', function() {  
+      
+      //Load the card selector with the currently available deck
+      preselect_id = $(this).attr('id');
+      let cardtitle = $(this).data('title');
+
+      $('.card-picker').html(buildCardSelector(deckbin, cardtitle));
+
+      $('.card-picker-wrapper').css({
+        display: 'flex'
+      }).fadeIn(100);
+    });
+
+    $('.card-picker-wrapper').click(function(e) {
+      if (!$(e.target).closest('.card-picker').length) {
+        $('.card-picker-wrapper').fadeOut(100);
+    }
+});
+
+
 
   });
 
@@ -86,6 +106,24 @@
     });
     return theHTML;
   }
+
+  function buildCardSelector(d, title) {
+    let theHTML = `<span class='selectortitle'>${title}</span>:<br>`;
+    d.forEach(function(c,i) {
+      let c1 = binCard2str(c);
+      let c1str = createCardDiv(c1);
+      let cardspace = "";
+      if ((i+1)%13==0 && i!=d.length-1 ) {
+        cardspace="<hr size=1 noshade>";
+      } else {
+        cardspace=(i==d.length-1?"":"");
+      }
+      theHTML += `${c1str}${cardspace}\n`;      
+      
+    });
+    return theHTML;
+  }
+
   function createCardDiv(c, marginclass) {
     let theHTML = '';
     r = c[0]; s=c[1];
@@ -278,6 +316,7 @@
   let resultset = [];
   var deckbin = [];
   var combos = [];
+  let preselect_id = '';
   deckbin = createDeck_bin(false);
   deckbin.forEach(function(c1,a){ deckbin.forEach(function(c2,b){ if (b>a) { combos.push([c1,c2]); } }); });
   
@@ -486,33 +525,33 @@
   <div class="card-container">
     <div class="hero-cards">
       <span class="cardtitle">Hero:</span><br>
-      <div class="cardpreselect empty" id="herocard1"></div>
-      <div class="cardpreselect empty" id="herocard2"></div>
+      <div class="cardpreselect empty" id="herocard1" data-title="Hero Card 1"></div>
+      <div class="cardpreselect empty" id="herocard2" data-title="Hero Card 2"></div>
     </div>
     &nbsp;
     &nbsp;    
   
     <div class="common-cards">
       <span class="cardtitle">Common:</span><br>
-      <div class="cardpreselect empty" id="common1"></div>
-      <div class="cardpreselect empty" id="common2"></div>
-      <div class="cardpreselect empty" id="common3"></div>
-      <div class="cardpreselect empty" id="common4"></div>
-      <div class="cardpreselect empty" id="common5"></div>
+      <div class="cardpreselect empty" id="common1" data-title="Flop Card 1"></div>
+      <div class="cardpreselect empty" id="common2" data-title="Flop Card 2"></div>
+      <div class="cardpreselect empty" id="common3" data-title="Flop Card 3"></div>
+      <div class="cardpreselect empty" id="common4" data-title="Turn Card"></div>
+      <div class="cardpreselect empty" id="common5" data-title="River Card"></div>
     </div>
     &nbsp;
   
     <div class="burn-card">
       <span class="cardtitle">Burn:</span><br>
-      <div class="cardpreselect empty" id="burn"></div>
+      <div class="cardpreselect empty" id="burn" data-title="Burn Card"></div>
     </div>    
     &nbsp;
     &nbsp;
   
     <div class="villain-cards">
       <span class="cardtitle">Villain:</span><br>
-      <div class="cardpreselect empty" id="villaincard1"></div>
-      <div class="cardpreselect empty" id="villaincard2"></div>
+      <div class="cardpreselect empty" id="villaincard1" data-title="Villain Card 1"></div>
+      <div class="cardpreselect empty" id="villaincard2" data-title="Villain Card 2"></div>
     </div>
   </div>
   </div>
@@ -538,6 +577,7 @@
   <br><div class="countlabel">Games / s (GPS):</div><div class="countnum" id="GPS">0</div>
   <br><div class="countlabel">Best GPS:</div><div class="countnum" id="fastestGPS">0</div>
 
-  <div class="card-combo-overlay" style="display: none;">Card Combos Here</div>
+  <div class="card-combo-overlay"></div>
+  <div class="card-picker-wrapper"><div class="card-picker"></div></div>
 </body>
 </html>
