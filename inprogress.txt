@@ -2,5 +2,6 @@
    - results: aggregate win % (equity)
    - preset flop
    - preset burn card
-   - rollover button show combos
+   - preset hold cards
+  x- rollover button show combos
    - add thread for processing
