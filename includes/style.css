@@ -1,6 +1,13 @@
+  body {
+    background-color: #606060;
+    color: white;
+  }
 
+  a {
+    color:white;
+  }
 
-#rankTable {
+  #rankTable {
     width: 100%;
     border-collapse: collapse;
   }
@@ -15,6 +22,7 @@
   #rankTable th {
     background-color: #f2f2f2;
     font-weight: bold;
+    color:black;
   }
 
   #rankTable th {
@@ -102,3 +110,13 @@
   .hand-range-button.result {
     opacity: .2;
   }
+
+  .card-combo-overlay {
+    position: fixed; /* Use fixed to position relative to the viewport */
+    display: none;
+    background-color: #f9f9f9; /* Example background */
+    border: 1px solid #d3d3d3; /* Example border */
+    z-index: 100; /* Ensure it's above other content */
+    padding: 5px; /* Example padding */
+  }
+  

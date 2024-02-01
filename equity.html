@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Card.js : </title>
+  <title>Card.js : Hold'em Equity</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="./includes/Card.js"></script>
   <link rel="stylesheet" href="./includes/style.css">
@@ -10,6 +10,7 @@
   <script>
 
   $(document).ready(function() {
+ 
 
     function displayRange(who) {
       $('#'+who+'Range').html(buildRangeTable(who));  
@@ -28,6 +29,37 @@
     displayRange('hero');
     displayRange('villain');
     displayRange('result');
+
+
+    var hoverTimer;
+    $('.hand-range-button:not(.result)').hover(function(e) {      
+
+      let t = $(this).data('type');
+      let theseCombos = getCombos(t,deckbin);
+
+      hoverTimer = setTimeout(function() {
+
+        //Create overlay contents
+
+
+        var overlayWidth = $('.card-combo-overlay').outerWidth();
+        var pageWidth = $(window).width();
+        var overlayX = e.pageX + 10; 
+
+        // Check if overlay extends past the right edge of the viewport
+        if (overlayX + overlayWidth > pageWidth) {
+          overlayX = e.pageX - overlayWidth - 10; // Position to the left of the cursor
+        }
+
+        $('.card-combo-overlay').css({
+          top: e.pageY - 20, // Slightly above the cursor
+          left: overlayX
+        }).fadeIn(100);
+      }, 1500);
+    }, function() {  
+      clearTimeout(hoverTimer); // Cancel the timer if mouse leaves before overlay appears
+      $('.card-combo-overlay').fadeOut(50); // Hide the overlay
+    });
 
   });
 
@@ -52,16 +84,19 @@
       return tableHTML;
     }
 
-    function displayCombos(who, d){
-      let combos = [];
-      let types = new Map();
-      d.forEach(function(c1,a){
-        d.forEach(function(c2,b){
-          if (b>a) {
-            combos.push([c1,c2]);            
-          }
-        });
+    function getCombos(type, d) {
+      let c = [];
+      combos.forEach(h=>{
+        let thistype = binHand2type(h);
+        if (type==thistype) {
+          c.push(h);
+        }
       });
+      return c;
+    }
+
+    function displayCombos(who, d){      
+      let types = new Map();     
       
       combos.forEach(h=>{
         let thistype = binHand2type(h);
@@ -213,8 +248,11 @@
       }
     }
 
+  //Initialize the deck and all combos
   var deckbin = [];
+  var combos = [];
   deckbin = createDeck_bin(false);
+  deckbin.forEach(function(c1,a){ deckbin.forEach(function(c2,b){ if (b>a) { combos.push([c1,c2]); } }); });
   
   var continuousTrialsInterval;
   var games=0;
@@ -437,6 +475,6 @@
   <br><div class="countlabel">Games / s (GPS):</div><div class="countnum" id="GPS">0</div>
   <br><div class="countlabel">Best GPS:</div><div class="countnum" id="fastestGPS">0</div>
 
-  
+  <div class="card-combo-overlay" style="display: none;">Card Combos Here</div>
 </body>
 </html>
