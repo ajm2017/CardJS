@@ -9,79 +9,87 @@
   <script src="includes/topbar.js" defer></script>
   <script>
 
-  $(document).ready(function() {
- 
-    function displayRange(who) {
-      $('#'+who+'Range').html(buildRangeTable(who));  
-      if (who!='result') {
-        $('.' + who + '.hand-range-button').on('click', function() {  $(this).toggleClass('selected'); saveRange(who); resetResults(); });
-        $('.' + who + ' .quick-select').on('click', function() {
-          const position = $(this).data('position');
-          selectRangeForPosition(position,who);
-          saveRange(who);
-          resetResults();
-        });  
-        displayCombos(who, deckbin);
-      }        
-    }
+    $(document).ready(function() {
+  
+      function displayRange(who) {
+        $('#'+who+'Range').html(buildRangeTable(who));  
+        if (who!='result') {
+          $('.' + who + '.hand-range-button').on('click', function() {  $(this).toggleClass('selected'); saveRange(who); resetResults(); });
+          $('.' + who + ' .quick-select').on('click', function() {
+            const position = $(this).data('position');
+            selectRangeForPosition(position,who);
+            saveRange(who);
+            resetResults();
+          });  
+          displayCombos(who, deckbin);
+        }        
+      }
 
-    displayRange('hero');
-    displayRange('villain');
-    displayRange('result');
+      displayRange('hero');
+      displayRange('villain');
+      displayRange('result');
 
-    var hoverTimer;
-    $('.hand-range-button:not(.result)').hover(function(e) {      
+      var hoverTimer;
+      $('.hand-range-button:not(.result)').hover(function(e) {      
 
-      let t = $(this).data('type');
-      let theseCombos = getCombos(t,deckbin);
+        let t = $(this).data('type');
+        let theseCombos = getCombos(t,deckbin);
 
-      hoverTimer = setTimeout(function() {
+        hoverTimer = setTimeout(function() {
 
-        //Create overlay contents
-        let comboDivs = buildComboDivs(theseCombos);
-        $('.card-combo-overlay').html(comboDivs);
+          //Create overlay contents
+          let comboDivs = buildComboDivs(theseCombos);
+          $('.card-combo-overlay').html(comboDivs);
 
-        var overlayWidth = $('.card-combo-overlay').outerWidth();
-        var pageWidth = $(window).width();
-        var overlayX = e.pageX + 10; 
+          var overlayWidth = $('.card-combo-overlay').outerWidth();
+          var pageWidth = $(window).width();
+          var overlayX = e.pageX + 10; 
 
-        // Check if overlay extends past the right edge of the viewport
-        if (overlayX + overlayWidth > pageWidth) {
-          overlayX = e.pageX - overlayWidth - 10; // Position to the left of the cursor
-        }
+          // Check if overlay extends past the right edge of the viewport
+          if (overlayX + overlayWidth > pageWidth) {
+            overlayX = e.pageX - overlayWidth - 10; // Position to the left of the cursor
+          }
 
-        $('.card-combo-overlay').css({
-          top: e.pageY - 20, 
-          left: overlayX
+          $('.card-combo-overlay').css({
+            top: e.pageY - 20, 
+            left: overlayX
+          }).fadeIn(100);
+        }, 1500);
+      }, function() {  
+        clearTimeout(hoverTimer); 
+        $('.card-combo-overlay').fadeOut(50); 
+      });
+
+      $('.cardpreselect').on('click', function() {  
+        
+        //Load the card selector with the currently available deck
+        preselect_index = $(this).data('index');
+        let cardtitle = $(this).data('title');
+
+        $('.card-picker').html(buildCardSelector(deckbin, cardtitle));
+
+        $('.card-picker-wrapper').css({
+          display: 'flex'
         }).fadeIn(100);
-      }, 1500);
-    }, function() {  
-      clearTimeout(hoverTimer); // Cancel the timer if mouse leaves before overlay appears
-      $('.card-combo-overlay').fadeOut(50); // Hide the overlay
+      });
+
+      $('.card-picker-wrapper').click(function(e) {
+        if (!$(e.target).closest('.card-picker').length) {
+          $('.card-picker-wrapper').fadeOut(100);
+      }
     });
-
-    $('.cardpreselect').on('click', function() {  
-      
-      //Load the card selector with the currently available deck
-      preselect_id = $(this).attr('id');
-      let cardtitle = $(this).data('title');
-
-      $('.card-picker').html(buildCardSelector(deckbin, cardtitle));
-
-      $('.card-picker-wrapper').css({
-        display: 'flex'
-      }).fadeIn(100);
-    });
-
-    $('.card-picker-wrapper').click(function(e) {
-      if (!$(e.target).closest('.card-picker').length) {
-        $('.card-picker-wrapper').fadeOut(100);
-    }
-});
-
-
 
   });
+
+  function savePreselect(e) {
+    let cstr = $(e).data('card');
+    let cbin = strCard2bin(cstr);
+    preselects[preselect_index] = cbin;
+    deckbin.splice(deckbin.indexOf(cbin),1);
+    console.log (cstr, preselect_index, strCard2bin(cstr),preselects);
+    $('.card-picker-wrapper').fadeOut(100);
+  }
+
 
   function buildComboDivs(combo) {
     let theHTML = '';
@@ -108,17 +116,20 @@
   }
 
   function buildCardSelector(d, title) {
+    let lastsuit=0;
+    let thissuit=0;
     let theHTML = `<span class='selectortitle'>${title}</span>:<br>`;
     d.forEach(function(c,i) {
       let c1 = binCard2str(c);
       let c1str = createCardDiv(c1);
-      let cardspace = "";
-      if ((i+1)%13==0 && i!=d.length-1 ) {
-        cardspace="<hr size=1 noshade>";
-      } else {
-        cardspace=(i==d.length-1?"":"");
+      let cardspace = "";      
+      thissuit = c>>4;
+      console.log (thissuit);
+      if (thissuit!=lastsuit && i!=d.length-1 ) {
+        lastsuit = thissuit;
+        theHTML += `<hr size=1 noshade>\n`;      
       }
-      theHTML += `${c1str}${cardspace}\n`;      
+      theHTML += `${c1str}\n`;
       
     });
     return theHTML;
@@ -131,7 +142,7 @@
     sname = suitNames[snum];
 
     theHTML += `
-      <div class="card ${sname}">
+      <div class="card ${sname}" onclick="savePreselect(this);" data-card="${c}">
         <span class="cardrank">${r}</span>
         <span class="cardsuit ${sname}">${s}</span>
       </div>
@@ -314,9 +325,10 @@
   let heroRange = [];
   let villainRange = [];
   let resultset = [];
-  var deckbin = [];
-  var combos = [];
-  let preselect_id = '';
+  let deckbin = [];
+  let combos = [];
+  let preselects = [];
+  let preselect_index = 0;
   deckbin = createDeck_bin(false);
   deckbin.forEach(function(c1,a){ deckbin.forEach(function(c2,b){ if (b>a) { combos.push([c1,c2]); } }); });
   
@@ -525,33 +537,33 @@
   <div class="card-container">
     <div class="hero-cards">
       <span class="cardtitle">Hero:</span><br>
-      <div class="cardpreselect empty" id="herocard1" data-title="Hero Card 1"></div>
-      <div class="cardpreselect empty" id="herocard2" data-title="Hero Card 2"></div>
+      <div class="cardpreselect empty" id="preselect0" data-index="0" data-title="Hero Card 1"></div>
+      <div class="cardpreselect empty" id="preselect1" data-index="1" data-title="Hero Card 2"></div>
     </div>
     &nbsp;
     &nbsp;    
   
     <div class="common-cards">
       <span class="cardtitle">Common:</span><br>
-      <div class="cardpreselect empty" id="common1" data-title="Flop Card 1"></div>
-      <div class="cardpreselect empty" id="common2" data-title="Flop Card 2"></div>
-      <div class="cardpreselect empty" id="common3" data-title="Flop Card 3"></div>
-      <div class="cardpreselect empty" id="common4" data-title="Turn Card"></div>
-      <div class="cardpreselect empty" id="common5" data-title="River Card"></div>
+      <div class="cardpreselect empty" id="preselect2" data-index="2" data-title="Flop Card 1"></div>
+      <div class="cardpreselect empty" id="preselect3" data-index="3" data-title="Flop Card 2"></div>
+      <div class="cardpreselect empty" id="preselect4" data-index="4" data-title="Flop Card 3"></div>
+      <div class="cardpreselect empty" id="preselect5" data-index="5" data-title="Turn Card"></div>
+      <div class="cardpreselect empty" id="preselect6" data-index="6" data-title="River Card"></div>
     </div>
     &nbsp;
   
     <div class="burn-card">
       <span class="cardtitle">Burn:</span><br>
-      <div class="cardpreselect empty" id="burn" data-title="Burn Card"></div>
+      <div class="cardpreselect empty" id="preselect7" data-index="7" data-title="Burn Card"></div>
     </div>    
     &nbsp;
     &nbsp;
   
     <div class="villain-cards">
       <span class="cardtitle">Villain:</span><br>
-      <div class="cardpreselect empty" id="villaincard1" data-title="Villain Card 1"></div>
-      <div class="cardpreselect empty" id="villaincard2" data-title="Villain Card 2"></div>
+      <div class="cardpreselect empty" id="preselect8" data-index="8" data-title="Villain Card 1"></div>
+      <div class="cardpreselect empty" id="preselect9" data-index="9" data-title="Villain Card 2"></div>
     </div>
   </div>
   </div>

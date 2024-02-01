@@ -139,6 +139,7 @@
   }
 
   .card {
+    cursor: pointer;
     width: 20px; /* Fixed width, adjust as needed */
     height: 34px; /* Fixed height, adjust as needed */
     border: 1px solid #000; /* Thin black border */
@@ -148,6 +149,10 @@
     align-items: center; /* Centers children horizontally */
     position: relative; /* Allows absolute positioning of children */
     margin:0px;
+  }
+
+  .card:hover {
+    background-color: #ccc;
   }
   
   .cardrank {
@@ -195,7 +200,7 @@
     align-items: flex-start; 
   }
   
-  .cardpreselect {
+  .cardpreselect {    
     width: 60px;
     height: 90px;
     border: 1px solid #000;
@@ -232,6 +237,7 @@
     border-radius: 10px;
     padding:10px;
     color:black;
+    cursor: pointer;
   }
 
   .card-picker .selectortitle {

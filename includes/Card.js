@@ -53,6 +53,12 @@ function binCard2str(c) {
   return r+s;
 }
 
+function strCard2bin(c) {
+  s = unicodeSuits.findIndex(e => e==c[1]);
+  r = cardRanksLO.findIndex(e => e==c[0]);  
+  return [0,16,32,48][s] + (r+1);
+}
+
 function binHand2str(h) {
   nh = [];
   h.forEach(e=>{nh.push(binCard2str(e))}) 
