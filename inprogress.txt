@@ -3,3 +3,4 @@
    - preset flop
    - preset burn card
    - rollover button show combos
+   - add thread for processing
