@@ -140,15 +140,31 @@
 
   .card {
     cursor: pointer;
-    width: 20px; /* Fixed width, adjust as needed */
-    height: 34px; /* Fixed height, adjust as needed */
-    border: 1px solid #000; /* Thin black border */
-    border-radius: 2px; /* Rounded corners */
-    display: inline-flex; /* Enables flexbox layout */
-    justify-content: center; /* Centers children vertically */
-    align-items: center; /* Centers children horizontally */
-    position: relative; /* Allows absolute positioning of children */
+    width: 20px; 
+    height: 34px; 
+    border: 1px solid #000; 
+    border-radius: 2px; 
+    display: inline-flex; 
+    justify-content: center; 
+    align-items: center; 
+    position: relative; 
     margin:0px;
+  }
+
+  .bigcard {
+    display:none;
+    cursor: pointer;
+    width: 52px; 
+    height: 80px; 
+    border: 1px solid #000; 
+    background-color: white;
+    border-radius: 2px; 
+    display: inline-flex; 
+    justify-content: center; 
+    align-items: center; 
+    position: absolute; 
+    margin:0px;
+    z-index:90;
   }
 
   .card:hover {
@@ -156,16 +172,16 @@
   }
   
   .cardrank {
-    position: absolute; /* Allows precise positioning */
-    top: 2px; /* Distance from top edge */
-    left: 2px; /* Distance from left edge */
-    font-size: 9px; /* Adjust font size as needed */
+    position: absolute; 
+    top: 2px; 
+    left: 2px; 
+    font-size: 9px; 
     color:black;
   }
   
-  .cardsuit {
-    font-size: 16px; /* Adjust font size as needed */
-  }
+  .cardsuit { font-size: 16px; }
+  .bigcard .cardrank { left: 4px; font-size: 19px; font-weight:bold; }
+  .bigcard .cardsuit { font-size: 39px; }
 
   .hearts { color:red; }
   .clubs {  color:green; }
@@ -209,7 +225,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
+    cursor: pointer;    
   }
   
   .cardpreselect.empty::before {
@@ -227,7 +243,18 @@
     left: 0;
     width: 100%;
     height: 100%;
+    z-index:99;    
   }
+
+  .card-picker-wrapper .clearbutton {
+    display:none;
+    position: relative;
+    top: -100px;
+    right: -335px;
+    color: black;
+    z-index: 100;
+  }
+  
   
   .card-picker {
     background-color: white;
@@ -238,6 +265,10 @@
     padding:10px;
     color:black;
     cursor: pointer;
+    z-index:99;
+    border-width:1px;
+    border-style:solid;
+    border-color:black;
   }
 
   .card-picker .selectortitle {

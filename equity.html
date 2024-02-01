@@ -60,18 +60,30 @@
         $('.card-combo-overlay').fadeOut(50); 
       });
 
-      $('.cardpreselect').on('click', function() {  
-        
-        //Load the card selector with the currently available deck
+
+      $('.cardpreselect, .preselected_card').on('click', function() {  
         preselect_index = $(this).data('index');
-        let cardtitle = $(this).data('title');
+        let cardtitle = $(`#preselect${preselect_index}`).data('title');
 
         $('.card-picker').html(buildCardSelector(deckbin, cardtitle));
+        if (preselectExists(preselects,preselect_index)) {
+          $('.card-picker-wrapper .clearbutton').show();
+        } else {
+          $('.card-picker-wrapper .clearbutton').hide();
+        }
 
         $('.card-picker-wrapper').css({
           display: 'flex'
         }).fadeIn(100);
       });
+
+
+      $('#preselect_clear').on('click', function() {                  
+        insertCard(preselects[preselect_index],deckbin);
+        preselects[preselect_index] = 0;
+        $(`#preselect${preselect_index}_card`).hide();       
+      });
+
 
       $('.card-picker-wrapper').click(function(e) {
         if (!$(e.target).closest('.card-picker').length) {
@@ -84,10 +96,50 @@
   function savePreselect(e) {
     let cstr = $(e).data('card');
     let cbin = strCard2bin(cstr);
+
+    //check for previous preselect (if so, add it back to deck and resort)    
+    insertCard(preselects[preselect_index],deckbin);
+    console.log (preselects[preselect_index]);   
+
     preselects[preselect_index] = cbin;
     deckbin.splice(deckbin.indexOf(cbin),1);
+
+    //show preselect card
+    var p = $(`#preselect${preselect_index}`);
+    var offset = p.offset();
+    var width = p.outerWidth();
+    var height = p.outerHeight();    
+    var c = $(`#preselect${preselect_index}_card`);
+    sname = suitNames[cbin>>4];
+    $(`#preselect${preselect_index}_card .cardrank`).html(cstr[0]);
+    $(`#preselect${preselect_index}_card .cardsuit`).html(cstr[1]);
+    $(`#preselect${preselect_index}_card .cardsuit`).addClass(sname);
+    c.css({
+      top: offset.top+5,
+      left: offset.left+4
+    }).fadeIn(100);
+
+
     console.log (cstr, preselect_index, strCard2bin(cstr),preselects);
     $('.card-picker-wrapper').fadeOut(100);
+  }
+
+  function insertCard(c, d) {
+    if (typeof c!== 'undefined') {
+      if (c > 0) {
+        d.push(c);
+        d.sort((a,b)=> a-b);
+      }
+    }
+  }
+
+  function preselectExists(p,i) {
+    if (typeof p[i]!== 'undefined') {
+      if (p[i] > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
 
@@ -590,6 +642,17 @@
   <br><div class="countlabel">Best GPS:</div><div class="countnum" id="fastestGPS">0</div>
 
   <div class="card-combo-overlay"></div>
-  <div class="card-picker-wrapper"><div class="card-picker"></div></div>
+  <div class="card-picker-wrapper"><div class="clearbutton"><button id="preselect_clear">Clear</button></div><div class="card-picker"></div></div>
+
+  <div class="bigcard preselected_card" id="preselect0_card" data-index="0"><span class="cardrank"></span><span class="cardsuit"></span></div>
+  <div class="bigcard preselected_card" id="preselect1_card" data-index="1"><span class="cardrank"></span><span class="cardsuit"></span></div>
+  <div class="bigcard preselected_card" id="preselect2_card" data-index="2"><span class="cardrank"></span><span class="cardsuit"></span></div>
+  <div class="bigcard preselected_card" id="preselect3_card" data-index="3"><span class="cardrank"></span><span class="cardsuit"></span></div>
+  <div class="bigcard preselected_card" id="preselect4_card" data-index="4"><span class="cardrank"></span><span class="cardsuit"></span></div>
+  <div class="bigcard preselected_card" id="preselect5_card" data-index="5"><span class="cardrank"></span><span class="cardsuit"></span></div>
+  <div class="bigcard preselected_card" id="preselect6_card" data-index="6"><span class="cardrank"></span><span class="cardsuit"></span></div>
+  <div class="bigcard preselected_card" id="preselect7_card" data-index="7"><span class="cardrank"></span><span class="cardsuit"></span></div>
+  <div class="bigcard preselected_card" id="preselect8_card" data-index="8"><span class="cardrank"></span><span class="cardsuit"></span></div>
+  <div class="bigcard preselected_card" id="preselect9_card" data-index="9"><span class="cardrank"></span><span class="cardsuit"></span></div>
 </body>
 </html>
