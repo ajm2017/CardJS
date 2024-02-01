@@ -2,6 +2,7 @@ const cardRanksHI = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K',
 const cardRanksLO = ['A','2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
 const royalRanks = ['T', 'J', 'Q', 'K', 'A'];
 const unicodeSuits = ['♠', '♣', '♥', '♦'];
+const suitNames = ['spades', 'clubs', 'hearts', 'diamonds'];
 const rankNames = [
   "High Card",
   "Pair",

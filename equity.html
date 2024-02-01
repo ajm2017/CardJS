@@ -11,7 +11,6 @@
 
   $(document).ready(function() {
  
-
     function displayRange(who) {
       $('#'+who+'Range').html(buildRangeTable(who));  
       if (who!='result') {
@@ -30,7 +29,6 @@
     displayRange('villain');
     displayRange('result');
 
-
     var hoverTimer;
     $('.hand-range-button:not(.result)').hover(function(e) {      
 
@@ -40,7 +38,9 @@
       hoverTimer = setTimeout(function() {
 
         //Create overlay contents
-
+        let comboDivs = buildComboDivs(theseCombos);
+        $('.card-combo-overlay').html(comboDivs);
+        //console.log (comboDivs);
 
         var overlayWidth = $('.card-combo-overlay').outerWidth();
         var pageWidth = $(window).width();
@@ -63,160 +63,182 @@
 
   });
 
+  function buildComboDivs(combo) {
+    let theHTML = '';
+    combo.forEach(function(h,i) {
+      let c1 = binCard2str(h[0]);
+      let c2 = binCard2str(h[1]);
+      let c1str = createCardDiv(c1);
+      let c2str = createCardDiv(c2);
+      let sort1 = cardRanksHI.findIndex(element => element==c1[0]);
+      let sort2 = cardRanksHI.findIndex(element => element==c2[0]);
+      let cardspace = "";
+      if ((i+1)%6==0 && i!=combo.length-1 ) {
+        cardspace="<hr size=1 noshade>";
+      } else {
+        cardspace=(i==combo.length-1?"":"&nbsp;");
+      }
+      if (sort2>sort1) {
+        theHTML += `${c2str}${c1str}${cardspace}\n`;
+       } else {
+        theHTML += `${c1str}${c2str}${cardspace}\n`;
+      }
+    });
+    return theHTML;
+  }
+  function createCardDiv(c, marginclass) {
+    let theHTML = '';
+    r = c[0]; s=c[1];
+    snum = unicodeSuits.findIndex(element => element==s);
+    sname = suitNames[snum];
 
-    function buildRangeTable(who) {
-      const cards = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
-      let tableHTML = '';  
-      cards.forEach((card, index) => {
-        tableHTML += '<tr>';                
-        cards.slice(0,index).forEach(innerCard => {
-          tableHTML += buildRangeButton(who, innerCard, card, 'o');
-        });
-        cards.slice(index).forEach(innerCard => {
-          if (card==innerCard) {
-            tableHTML += buildRangeButton(who, card, innerCard, '');
-          } else {
-            tableHTML += buildRangeButton(who, card, innerCard, 's');
-          }          
-        });       
-        tableHTML += '</tr>';        
+    theHTML += `
+      <div class="card ${sname}">
+        <span class="cardrank">${r}</span>
+        <span class="cardsuit ${sname}">${s}</span>
+      </div>
+    `;
+    return theHTML;
+  }
+  function buildRangeTable(who) {
+    const cards = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+    let tableHTML = '';  
+    cards.forEach((card, index) => {
+      tableHTML += '<tr>';                
+      cards.slice(0,index).forEach(innerCard => {
+        tableHTML += buildRangeButton(who, innerCard, card, 'o');
       });
-      return tableHTML;
-    }
-
-    function getCombos(type, d) {
-      let c = [];
-      combos.forEach(h=>{
-        let thistype = binHand2type(h);
-        if (type==thistype) {
-          c.push(h);
-        }
-      });
-      return c;
-    }
-
-    function displayCombos(who, d){      
-      let types = new Map();     
-      
-      combos.forEach(h=>{
-        let thistype = binHand2type(h);
-        if (types.has(thistype)) {
-          cnt = types.get(thistype);
-          types.set(thistype, cnt+1);
+      cards.slice(index).forEach(innerCard => {
+        if (card==innerCard) {
+          tableHTML += buildRangeButton(who, card, innerCard, '');
         } else {
-          types.set (thistype,1);
-        }
-      });
+          tableHTML += buildRangeButton(who, card, innerCard, 's');
+        }          
+      });       
+      tableHTML += '</tr>';        
+    });
+    return tableHTML;
+  }
+  function getCombos(type, d) {
+    let c = [];
+    combos.forEach(h=>{
+      let thistype = binHand2type(h);
+      if (type==thistype) {
+        c.push(h);
+      }
+    });
+    return c;
+  }
+  function displayCombos(who, d){      
+    let types = new Map();     
+    
+    combos.forEach(h=>{
+      let thistype = binHand2type(h);
+      if (types.has(thistype)) {
+        cnt = types.get(thistype);
+        types.set(thistype, cnt+1);
+      } else {
+        types.set (thistype,1);
+      }
+    });
 
-      types.forEach(function(v,k){
-       $(`#${who}_${k}`).find('.combo-num').html(v);
-       $(`#${who}_${k}`).find('.combo-perc').html((Math.round(v/combos.length*10000,5)/100).toLocaleString()+'%');
-      });
+    types.forEach(function(v,k){
+      $(`#${who}_${k}`).find('.combo-num').html(v);
+      $(`#${who}_${k}`).find('.combo-perc').html((Math.round(v/combos.length*10000,5)/100).toLocaleString()+'%');
+    });
 
-      $(`#${who}_selcombos`).html(0);
-      $(`#${who}_totcombos`).html(combos.length);
-      $(`#${who}_rangeperc`).html(0);
+    $(`#${who}_selcombos`).html(0);
+    $(`#${who}_totcombos`).html(combos.length);
+    $(`#${who}_rangeperc`).html(0);
+  }
+  function buildRangeButton(who, innerCard, card, ext) {
+    let comboText = `<span class="combo-num">abc</span><span class="combo-perc">xyz</span>`;
+    if (who!='hero' && who!='villain') comboText = '';
+    return `<td>
+      <button class="hand-range-button ${who}" id="${who}_${innerCard}${card}${ext}" data-type="${innerCard}${card}${ext}">
+        ${innerCard}${card}${ext}
+        ${comboText}
+      </button>
+      </td>`;
+  }
+  function saveRange(who) {
+    let combos=0;
+    if (who=='hero') {
+      heroRange = [];
+      $(`.hand-range-button.${who}.selected`).each(function() {
+        let value = $(this).data('type').toLocaleString();
+        combos += parseInt($(this).find('.combo-num').html());
+        heroRange.push(value);
+      });
+      console.log (heroRange, combos);
     }
 
-    function buildRangeButton(who, innerCard, card, ext) {
-      let comboText = `<span class="combo-num">abc</span><span class="combo-perc">xyz</span>`;
-      if (who!='hero' && who!='villain') comboText = '';
-      return `<td>
-        <button class="hand-range-button ${who}" id="${who}_${innerCard}${card}${ext}" data-type="${innerCard}${card}${ext}">
-          ${innerCard}${card}${ext}
-          ${comboText}
-        </button>
-        </td>`;
+    if (who=='villain') {
+      villainRange = [];
+      $(`.hand-range-button.${who}.selected`).each(function() {
+        let value = $(this).data('type').toLocaleString();
+        combos += parseInt($(this).find('.combo-num').html());
+        villainRange.push(value);
+      });
+      console.log (villainRange, combos);        
     }
+    $(`#${who}_selcombos`).html(combos);
+    $(`#${who}_rangeperc`).html(Math.round(combos / parseInt($(`#${who}_totcombos`).html())*10000)/100);
+  }
+  function initResults() {
+    $('.hand-range-button.hero').each(function() {
+        let value = $(this).data('type').toLocaleString();
+        resultset.push([value,0,0]);
+        //0 - hand type
+        //1 - occurrences
+        //2 - wins
+      });
+  }
+  function resetResults() {
+    //Initial Opacity of result buttons (based on hero range)
+    $('.hand-range-button.result').css("opacity", "0.2")
+    $('.hand-range-button.result').css('background', 'linear-gradient(to right, #4CAF50 ' + 0 + '%, #f0f0f0 ' + 0 + '%)');
+    heroRange.forEach(e=>{
+      $('#result_'+e).css("opacity", ".5"); 
+    })
 
-    let heroRange = [];
-    let villainRange = [];
-
-    function saveRange(who) {
-      let combos=0;
-      if (who=='hero') {
-        heroRange = [];
-        $(`.hand-range-button.${who}.selected`).each(function() {
-          let value = $(this).data('type').toLocaleString();
-          combos += parseInt($(this).find('.combo-num').html());
-          heroRange.push(value);
-        });
-        console.log (heroRange, combos);
+    stopContinuousTrials();
+    games=0;
+    eligibles=0;      
+    
+    resultset = [];
+    initResults();    
+  }
+  function updateResults() {
+    maxo=0;
+    resultset.forEach(e=>{
+      o=0; w=0;
+      if (eligibles) {
+      o = e[1]/eligibles;
+      w = e[2]/e[1];
       }
 
-      if (who=='villain') {
-        villainRange = [];
-        $(`.hand-range-button.${who}.selected`).each(function() {
-          let value = $(this).data('type').toLocaleString();
-          combos += parseInt($(this).find('.combo-num').html());
-          villainRange.push(value);
-        });
-        console.log (villainRange, combos);        
-      }
-      $(`#${who}_selcombos`).html(combos);
-      $(`#${who}_rangeperc`).html(Math.round(combos / parseInt($(`#${who}_totcombos`).html())*10000)/100);
-    }
+      //Occurence opacity
+      if (o > maxo) maxo=o;
+      operc = o/lastmaxo;
+      if (operc > 1) operc = 1;
+      operc = (.5+(operc*.5)).toFixed(2);
+      $('#result_'+e[0]).css("opacity", operc); 
 
-    let resultset = []
-    function initResults() {
-      $('.hand-range-button.hero').each(function() {
-          let value = $(this).data('type').toLocaleString();
-          resultset.push([value,0,0]);
-          //0 - hand type
-          //1 - occurrences
-          //2 - wins
-        });
-    }
+      //Win fill gradient
+      fillperc = Math.ceil(w*100);
+      whiteperc = 1-fillperc;
+      $('#result_'+e[0]).css('background', 'linear-gradient(to right, #4CAF50 ' +fillperc + '%, #f0f0f0 ' + whiteperc + '%)');
+      $('#result_'+e[0]).attr('title', e[0] + ' - occurs: ' + (o*100).toFixed(3) + '%, wins: ' + (w*100).toFixed(2) +'%');
 
-    function resetResults() {
-      //Initial Opacity of result buttons (based on hero range)
-      $('.hand-range-button.result').css("opacity", "0.2")
-      $('.hand-range-button.result').css('background', 'linear-gradient(to right, #4CAF50 ' + 0 + '%, #f0f0f0 ' + 0 + '%)');
-      heroRange.forEach(e=>{
-        $('#result_'+e).css("opacity", ".5"); 
-      })
+      //Game & Eligibles
+      $("#totalGames").html(games.toLocaleString());
+      $("#eligibleGames").html(eligibles.toLocaleString());
 
-      stopContinuousTrials();
-      games=0;
-      eligibles=0;      
-      
-      resultset = [];
-      initResults();    
-    }
-
-    let maxo=0;
-    let lastmaxo=0;
-    function updateResults() {
-      maxo=0;
-      resultset.forEach(e=>{
-        o=0; w=0;
-        if (eligibles) {
-        o = e[1]/eligibles;
-        w = e[2]/e[1];
-        }
-
-        //Occurence opacity
-        if (o > maxo) maxo=o;
-        operc = o/lastmaxo;
-        if (operc > 1) operc = 1;
-        operc = (.5+(operc*.5)).toFixed(2);
-        $('#result_'+e[0]).css("opacity", operc); 
-
-        //Win fill gradient
-        fillperc = Math.ceil(w*100);
-        whiteperc = 1-fillperc;
-        $('#result_'+e[0]).css('background', 'linear-gradient(to right, #4CAF50 ' +fillperc + '%, #f0f0f0 ' + whiteperc + '%)');
-        $('#result_'+e[0]).attr('title', e[0] + ' - occurs: ' + (o*100).toFixed(3) + '%, wins: ' + (w*100).toFixed(2) +'%');
-
-        //Game & Eligibles
-        $("#totalGames").html(games.toLocaleString());
-        $("#eligibleGames").html(eligibles.toLocaleString());
-
-      });
-      lastmaxo = maxo;
-    }
-
-    function selectRangeForPosition(position,who) {
+    });
+    lastmaxo = maxo;
+  }
+  function selectRangeForPosition(position,who) {
       if (position=='INV') {
           $('.hand-range-button' + '.' + who + '.selected').addClass('temp');
           $('.hand-range-button' + '.' + who + ':not(.selected)').addClass('selected');
@@ -249,6 +271,11 @@
     }
 
   //Initialize the deck and all combos
+  let maxo=0;
+  let lastmaxo=0;
+  let heroRange = [];
+  let villainRange = [];
+  let resultset = [];
   var deckbin = [];
   var combos = [];
   deckbin = createDeck_bin(false);

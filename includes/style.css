@@ -51,6 +51,14 @@
       position:relative;
   }
 
+  .hand-range-button:not(.selected):not(.result):hover {
+    background-color: #ccc;
+  }
+
+  .hand-range-button.selected:not(.result):hover {
+    background-color: #73cd76;
+  }
+
   .hand-range-button.result {
     background: linear-gradient(to right, #f0f0f0 50%, #f0f0f0 50%);
   }
@@ -79,6 +87,8 @@
     background-color: #4CAF50; 
     color: white;
   }
+
+
 
   .hand-range-selector {
     align-items: center; 
@@ -118,5 +128,45 @@
     border: 1px solid #d3d3d3; /* Example border */
     z-index: 100; /* Ensure it's above other content */
     padding: 5px; /* Example padding */
+    color:black;
   }
+
+  .card {
+    display:inline-flex;
+  }
+
+  .cardspace {
+    padding-right:50px;
+  }
+
+  .card {
+    width: 20px; /* Fixed width, adjust as needed */
+    height: 34px; /* Fixed height, adjust as needed */
+    border: 1px solid #000; /* Thin black border */
+    border-radius: 2px; /* Rounded corners */
+    display: inline-flex; /* Enables flexbox layout */
+    justify-content: center; /* Centers children vertically */
+    align-items: center; /* Centers children horizontally */
+    position: relative; /* Allows absolute positioning of children */
+    margin:0px;
+  }
+  
+  .cardrank {
+    position: absolute; /* Allows precise positioning */
+    top: 2px; /* Distance from top edge */
+    left: 2px; /* Distance from left edge */
+    font-size: 9px; /* Adjust font size as needed */
+    color:black;
+  }
+  
+  .cardsuit {
+    font-size: 16px; /* Adjust font size as needed */
+  }
+
+  .hearts { color:red; }
+  .clubs {  color:green; }
+  .spades {  color:black; }
+  .diamonds {  color:blue; }
+  
+  
   
