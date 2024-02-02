@@ -123,7 +123,7 @@
 
     //check for previous preselect (if so, add it back to deck and resort)    
     insertCard(preselects[preselect_index],deckbin);
-    console.log (preselects[preselect_index]);   
+    //console.log (preselects[preselect_index]);   
 
     //set it and remove from the deck
     preselects[preselect_index] = cbin;
@@ -136,11 +136,15 @@
       case 0:
       case 1:        
         selectRangeByCombos('hero', heroCombos);
+        saveRange('hero');
+        resetResults();
         break;
 
       case 8:
       case 9:
         selectRangeByCombos('villain', villainCombos);
+        saveRange('villain');
+        resetResults();
         break;
     }
 
@@ -171,7 +175,7 @@
     }).fadeIn(100);
 
 
-    console.log (cstr, preselect_index, strCard2bin(cstr),preselects);
+    //console.log (cstr, preselect_index, strCard2bin(cstr),preselects);
     $('.card-picker-wrapper').fadeOut(100);
   }
 
@@ -237,7 +241,7 @@
       let c1str = createCardDiv(c1);
       let cardspace = "";      
       thissuit = c>>4;
-      console.log (thissuit);
+      //console.log (thissuit);
       if (thissuit!=lastsuit && i!=d.length-1 ) {
         lastsuit = thissuit;
         theHTML += `<hr size=1 noshade>\n`;      
@@ -375,7 +379,7 @@
         numcombos += parseInt($(this).find('.combo-num').html());
         villainRange.push(value);
       });
-      console.log (villainRange, villainCombos);        
+      //console.log (villainRange, villainCombos);        
     }
     
     $(`#${who}_selcombos`).html(numcombos);
@@ -525,25 +529,69 @@
     d = shuffleDeckFY(deckbin,v);
     resultindex = -1;
     eligible = false;
+    let p0=0;
+    let p1=0;
+    let p8=0;
+    let p9=0;
     
     //Deal each player hand
     playerHands = [];
-    for(i=1;i<=parseInt($('#players').val());i++) {
-      h = dealCards(d, 2, v)
-      p = [h,binHand2type(h),0]
-      //0 -- hand array
-      //1 -- hand type
-      //2 -- rank
-      
+    for(i=1;i<=parseInt($('#players').val());i++) {      
+      let h=[];            
+      let n=2;
+
       if (i==1) {
+        //Hero
+        p0 = preselects[0];
+        p1 = preselects[1];        
+        
+        if (typeof p0!='undefined' && p0>0) {
+          h.push(p0);
+          n--;
+        }
+
+        if (typeof p1!='undefined' && p1>0) {
+          h.push(p1);
+          n--;
+        }
+
+        if (n>0) {h=h.concat(dealCards(d, n, v));}
+        p = [h,binHand2type(h),0]
+        //0 -- hand array //1 -- hand type  //2 -- rank
+
         //is Hero eligible?
         if (heroRange.indexOf(p[1])===-1) {
           //NO: not in hero range, put cards back in deck and bail
           d.push(...h);
+
+          //remove any preselects
+          if (typeof p0!='undefined' && p0>0) d.splice(d.indexOf(p0),1);
+          if (typeof p1!='undefined' && p1>0) d.splice(d.indexOf(p1),1);
           return;
         }
 
       } else {
+        //Villain        
+        
+        if (i==2) {
+          p8 = preselects[8];
+          p9 = preselects[9];
+          
+          if (typeof p8!='undefined' && p8>0) {
+            h.push(p8);
+            n--;
+          }
+
+          if (typeof p9!='undefined' && p9>0) {
+            h.push(p9);
+            n--;
+          }
+        }
+
+        if (n>0) {h=h.concat(dealCards(d, n, v));}
+        p = [h,binHand2type(h),0]
+        //0 -- hand array //1 -- hand type  //2 -- rank
+
         //is at least one Villain eligible?
         if (!eligible && villainRange.indexOf(p[1])>=0) {
           //YES, don't need to check anymore...
@@ -564,6 +612,10 @@
     } else {
       //NO: Villains were eligible, so put cards back in deck and bail
       playerHands.forEach(e=>{d.push(...e[0])});
+      if (typeof p0!='undefined' && p0>0) d.splice(d.indexOf(p0),1);
+      if (typeof p1!='undefined' && p1>0) d.splice(d.indexOf(p1),1);
+      if (typeof p8!='undefined' && p8>0) d.splice(d.indexOf(p8),1);
+      if (typeof p9!='undefined' && p9>0) d.splice(d.indexOf(p9),1);
       return;
     }
 
@@ -600,6 +652,13 @@
     //Put the dealt cards back in the deck
     playerHands.forEach(e=>{d.push(...e[0])})
     d.push(...common);
+
+    //Remove preselected cards
+    //remove any preselects
+    if (typeof p0!='undefined' && p0>0) d.splice(d.indexOf(p0),1);
+    if (typeof p1!='undefined' && p1>0) d.splice(d.indexOf(p1),1);
+    if (typeof p8!='undefined' && p8>0) d.splice(d.indexOf(p8),1);
+    if (typeof p9!='undefined' && p9>0) d.splice(d.indexOf(p9),1);
 
     return;
   }

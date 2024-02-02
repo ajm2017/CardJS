@@ -96,7 +96,7 @@ function shuffleDeckFY(d, v) {
  
 function dealCards(d, numCards, v) {
   var hand = d.splice(0, numCards);  
-  if (v) console.log("Hand dealt:", binHand2str(hand), binHand2type(hand));      
+  //if (v) console.log("Hand dealt:", binHand2str(hand), binHand2type(hand));      
   return hand;
 }
 
