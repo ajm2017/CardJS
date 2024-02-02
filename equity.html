@@ -88,11 +88,22 @@
       $('#preselect_clear').on('click', function() {                  
         //put the card back in the deck and update the combos array
         insertCard(preselects[preselect_index],deckbin);
-        preselects[preselect_index] = 0;        
+        preselects[preselect_index] = 0;
         heroCombos = updateCombos(deckbin,[preselects[0],preselects[1]]);
         villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);        
         $(`#preselect${preselect_index}_card`).hide();       
-        $('.combo-num').html('0');
+        $('.combo-num').html('0');        
+        switch (preselect_index) {
+          case 0:
+          case 1:        
+            selectRangeByCombos('hero', heroCombos);
+          break;
+
+          case 8:
+          case 9:
+            selectRangeByCombos('villain', villainCombos);
+          break;
+        }
         displayCombos('hero', heroCombos);
         displayCombos('villain', villainCombos);
       });
@@ -120,8 +131,7 @@
     heroCombos = updateCombos(deckbin,[preselects[0],preselects[1]]);
     villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);
 
-    //default select the appopriate range
-    console.log(preselect_index)
+    //default select the appopriate range    
     switch (preselect_index) {
       case 0:
       case 1:        
@@ -167,10 +177,12 @@
 
   function selectRangeByCombos(who, c) {
     $(`.hand-range-button.${who}`).removeClass('selected');
-    c.forEach(h=>{
-      type = binHand2type(h);
-      $(`#${who}_${type}`).addClass('selected');
-    })
+    if ((who=='hero' && (preselects[0] || preselects[1])) || (who=='villain' && (preselects[8] || preselects[9])))  {
+      c.forEach(h=>{
+        type = binHand2type(h);
+        $(`#${who}_${type}`).addClass('selected');
+      })
+    }
   }
 
   function insertCard(c, d) {
