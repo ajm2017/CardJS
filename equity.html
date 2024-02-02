@@ -120,25 +120,25 @@
     heroCombos = updateCombos(deckbin,[preselects[0],preselects[1]]);
     villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);
 
+    //default select the appopriate range
+    console.log(preselect_index)
+    switch (preselect_index) {
+      case 0:
+      case 1:        
+        selectRangeByCombos('hero', heroCombos);
+        break;
+
+      case 8:
+      case 9:
+        selectRangeByCombos('villain', villainCombos);
+        break;
+    }
+
     //update the range combos
     $('.combo-num').html('0');
     $('.combo-perc').html('0.0%');
     displayCombos('hero', heroCombos);
     displayCombos('villain', villainCombos);
-
-    //default select the appopriate range
-    console.log(preselect_index)
-    switch (preselect_index) {
-      case 0:
-      case 1:
-        console.log ('test');
-        $('.hand-range-button.hero').removeClass('selected');
-        break;
-
-      case 8:
-      case 9:
-        break;
-    }
 
     //show preselect card
     var p = $(`#preselect${preselect_index}`);
@@ -149,6 +149,10 @@
     sname = suitNames[cbin>>4];
     $(`#preselect${preselect_index}_card .cardrank`).html(cstr[0]);
     $(`#preselect${preselect_index}_card .cardsuit`).html(cstr[1]);
+    $(`#preselect${preselect_index}_card .cardsuit`).removeClass('hearts');
+    $(`#preselect${preselect_index}_card .cardsuit`).removeClass('spades');
+    $(`#preselect${preselect_index}_card .cardsuit`).removeClass('clubs');
+    $(`#preselect${preselect_index}_card .cardsuit`).removeClass('diamonds');
     $(`#preselect${preselect_index}_card .cardsuit`).addClass(sname);
     c.css({
       top: offset.top+5,
@@ -159,6 +163,14 @@
 
     console.log (cstr, preselect_index, strCard2bin(cstr),preselects);
     $('.card-picker-wrapper').fadeOut(100);
+  }
+
+  function selectRangeByCombos(who, c) {
+    $(`.hand-range-button.${who}`).removeClass('selected');
+    c.forEach(h=>{
+      type = binHand2type(h);
+      $(`#${who}_${type}`).addClass('selected');
+    })
   }
 
   function insertCard(c, d) {
@@ -304,16 +316,24 @@
     });
 
     let usecombos=(who=='hero'?heroCombos:villainCombos);
+    let userange = (who=='hero'?heroRange:villainRange);
 
     types.forEach(function(v,k){
       $(`#${who}_${k}`).find('.combo-num').html(v);
       $(`#${who}_${k}`).find('.combo-perc').html((Math.round(v/usecombos.length*10000,5)/100).toLocaleString()+'%');
     });
 
-    $(`#${who}_selcombos`).html(0);
+    //count selected type combos
+    let numcombos=0;
+    $(`.hand-range-button.${who}.selected`).each(function() {
+        numcombos += parseInt($(this).find('.combo-num').html());
+    });
+
+    $(`#${who}_selcombos`).html(numcombos);
     $(`#${who}_totcombos`).html(usecombos.length);
     $(`#${who}_rangeperc`).html(0);
   }
+
   function buildRangeButton(who, innerCard, card, ext) {
     let comboText = `<span class="combo-num">abc</span><span class="combo-perc">xyz</span>`;
     if (who!='hero' && who!='villain') comboText = '';
@@ -621,7 +641,7 @@
       <table class="rangematrix" id="heroRange">
         <tbody></tbody>
       </table>
-      Selected:&nbsp; <span id="hero_selcombos"></span> / <span id="hero_totcombos"></span> &nbsp; (<span id="hero_rangeperc"></span>%)
+      Selected Combos:&nbsp; <span id="hero_selcombos"></span> / <span id="hero_totcombos"></span> &nbsp; (<span id="hero_rangeperc"></span>%)
     </div>    
     
     <div class="hand-range-selector villain">
@@ -645,7 +665,7 @@
       <table class="rangematrix" id="villainRange">
         <tbody></tbody>
       </table>
-      Selected:&nbsp; <span id="villain_selcombos"></span> / <span id="villain_totcombos"></span> &nbsp; (<span id="villain_rangeperc"></span>%)
+      Selected Combos:&nbsp; <span id="villain_selcombos"></span> / <span id="villain_totcombos"></span> &nbsp; (<span id="villain_rangeperc"></span>%)
     </div>
   </div>
   <hr size="1" noshade>
