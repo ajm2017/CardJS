@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Card.js : Hold'em Equity</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -7,686 +8,14 @@
   <link rel="stylesheet" href="./includes/style.css">
   <script>let titleSuffix = 'Hold\'em Equity';</script>
   <script src="includes/topbar.js" defer></script>
-  <script>
-
-    $(document).ready(function() {
-  
-      function displayRange(who) {
-        $('#'+who+'Range').html(buildRangeTable(who));  
-        if (who!='result') {
-          $('.' + who + '.hand-range-button').on('click', function() {  $(this).toggleClass('selected'); saveRange(who); resetResults(); });
-          $('.' + who + ' .quick-select').on('click', function() {
-            const position = $(this).data('position');
-            selectRangeForPosition(position,who);
-            saveRange(who);
-            resetResults();
-          });  
-          if (who=='hero') { displayCombos(who, heroCombos); } else { displayCombos(who, villainCombos); }
-        }        
-      }
-
-      displayRange('hero');
-      displayRange('villain');
-      displayRange('result');
-
-      var hoverTimer;
-      $('.hand-range-button:not(.result)').hover(function(e) {      
-
-        let t = $(this).data('type');
-
-        let theseCombos=[];
-        if ($(this).hasClass('hero')) {
-          theseCombos = getCombosByType(t,heroCombos);
-        } else {
-          theseCombos = getCombosByType(t,villainCombos);
-        }
-
-        hoverTimer = setTimeout(function() {
-
-          //Create overlay contents
-          let comboDivs = buildComboDivs(theseCombos);
-          $('.card-combo-overlay').html(comboDivs);
-
-          var overlayWidth = $('.card-combo-overlay').outerWidth();
-          var pageWidth = $(window).width();
-          var overlayX = e.pageX + 10; 
-
-          // Check if overlay extends past the right edge of the viewport
-          if (overlayX + overlayWidth > pageWidth) {
-            overlayX = e.pageX - overlayWidth - 10; // Position to the left of the cursor
-          }
-
-          $('.card-combo-overlay').css({
-            top: e.pageY - 20, 
-            left: overlayX
-          }).fadeIn(100);
-        }, 1500);
-      }, function() {  
-        clearTimeout(hoverTimer); 
-        $('.card-combo-overlay').fadeOut(50); 
-      });
-
-
-      $('.cardpreselect, .preselected_card').on('click', function() {  
-        preselect_index = $(this).data('index');
-        let cardtitle = $(`#preselect${preselect_index}`).data('title');
-
-        deckbin.sort((a,b)=> a-b);
-        $('.card-picker').html(buildCardSelector(deckbin, cardtitle));
-        if (preselectExists(preselects,preselect_index)) {
-          $('.card-picker-wrapper .clearbutton').show();
-        } else {
-          $('.card-picker-wrapper .clearbutton').hide();
-        }
-
-        $('.card-picker-wrapper').css({
-          display: 'flex'
-        }).fadeIn(100);
-      });
-
-
-      $('#preselect_clear').on('click', function() {                  
-        //put the card back in the deck and update the combos array
-        insertCard(preselects[preselect_index],deckbin);
-        preselects[preselect_index] = 0;
-        heroCombos = updateCombos(deckbin,[preselects[0],preselects[1]]);
-        villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);        
-        $(`#preselect${preselect_index}_card`).hide();       
-        $('.combo-num').html('0');        
-        switch (preselect_index) {
-          case 0:
-          case 1:        
-            selectRangeByCombos('hero', heroCombos);
-          break;
-
-          case 8:
-          case 9:
-            selectRangeByCombos('villain', villainCombos);
-          break;
-        }
-        displayCombos('hero', heroCombos);
-        displayCombos('villain', villainCombos);
-      });
-
-
-      $('.card-picker-wrapper').click(function(e) {
-        if (!$(e.target).closest('.card-picker').length) {
-          $('.card-picker-wrapper').fadeOut(100);
-      }
-    });
-
-  });
-
-  function savePreselect(e) {
-    let cstr = $(e).data('card');
-    let cbin = strCard2bin(cstr);
-
-    //check for previous preselect (if so, add it back to deck and resort)    
-    insertCard(preselects[preselect_index],deckbin);
-    //console.log (preselects[preselect_index]);   
-
-    //set it and remove from the deck
-    preselects[preselect_index] = cbin;
-    deckbin.splice(deckbin.indexOf(cbin),1);
-    heroCombos = updateCombos(deckbin,[preselects[0],preselects[1]]);
-    villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);
-
-    //default select the appopriate range    
-    switch (preselect_index) {
-      case 0:
-      case 1:        
-        selectRangeByCombos('hero', heroCombos);
-        saveRange('hero');
-        resetResults();
-        break;
-
-      case 8:
-      case 9:
-        selectRangeByCombos('villain', villainCombos);
-        saveRange('villain');
-        resetResults();
-        break;
-    }
-
-    //update the range combos
-    $('.combo-num').html('0');
-    $('.combo-perc').html('0.0%');
-    displayCombos('hero', heroCombos);
-    displayCombos('villain', villainCombos);
-
-    //show preselect card
-    var p = $(`#preselect${preselect_index}`);
-    var offset = p.offset();
-    var width = p.outerWidth();
-    var height = p.outerHeight();    
-    var c = $(`#preselect${preselect_index}_card`);
-    sname = suitNames[cbin>>4];
-    $(`#preselect${preselect_index}_card .cardrank`).html(cstr[0]);
-    $(`#preselect${preselect_index}_card .cardsuit`).html(cstr[1]);
-    $(`#preselect${preselect_index}_card .cardsuit`).removeClass('hearts');
-    $(`#preselect${preselect_index}_card .cardsuit`).removeClass('spades');
-    $(`#preselect${preselect_index}_card .cardsuit`).removeClass('clubs');
-    $(`#preselect${preselect_index}_card .cardsuit`).removeClass('diamonds');
-    $(`#preselect${preselect_index}_card .cardsuit`).addClass(sname);
-    c.css({
-      top: offset.top+5,
-      left: offset.left+4,
-      display: 'flex'
-    }).fadeIn(100);
-
-
-    //console.log (cstr, preselect_index, strCard2bin(cstr),preselects);
-    $('.card-picker-wrapper').fadeOut(100);
-  }
-
-  function selectRangeByCombos(who, c) {
-    $(`.hand-range-button.${who}`).removeClass('selected');
-    if ((who=='hero' && (preselects[0] || preselects[1])) || (who=='villain' && (preselects[8] || preselects[9])))  {
-      c.forEach(h=>{
-        type = binHand2type(h);
-        $(`#${who}_${type}`).addClass('selected');
-      })
-    }
-  }
-
-  function insertCard(c, d) {
-    if (typeof c!== 'undefined') {
-      if (c > 0) {
-        d.push(c);
-        d.sort((a,b)=> a-b);
-      }
-    }
-  }
-
-  function preselectExists(p,i) {
-    if (typeof p[i]!== 'undefined') {
-      if (p[i] > 0) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-
-  function buildComboDivs(combo) {
-    let theHTML = '';
-    combo.forEach(function(h,i) {
-      let c1 = binCard2str(h[0]);
-      let c2 = binCard2str(h[1]);
-      let c1str = createCardDiv(c1);
-      let c2str = createCardDiv(c2);
-      let sort1 = cardRanksHI.findIndex(element => element==c1[0]);
-      let sort2 = cardRanksHI.findIndex(element => element==c2[0]);
-      let cardspace = "";
-      if ((i+1)%6==0 && i!=combo.length-1 ) {
-        cardspace="<hr size=1 noshade>";
-      } else {
-        cardspace=(i==combo.length-1?"":"&nbsp;");
-      }
-      if (sort2>sort1) {
-        theHTML += `${c2str}${c1str}${cardspace}\n`;
-       } else {
-        theHTML += `${c1str}${c2str}${cardspace}\n`;
-      }
-    });
-    return theHTML;
-  }
-
-  function buildCardSelector(d, title) {
-    let lastsuit=0;
-    let thissuit=0;
-    let theHTML = `<span class='selectortitle'>${title}</span>:<br>`;
-    d.forEach(function(c,i) {
-      let c1 = binCard2str(c);
-      let c1str = createCardDiv(c1);
-      let cardspace = "";      
-      thissuit = c>>4;
-      //console.log (thissuit);
-      if (thissuit!=lastsuit && i!=d.length-1 ) {
-        lastsuit = thissuit;
-        theHTML += `<hr size=1 noshade>\n`;      
-      }
-      theHTML += `${c1str}\n`;
-      
-    });
-    return theHTML;
-  }
-
-  function createCardDiv(c, marginclass) {
-    let theHTML = '';
-    r = c[0]; s=c[1];
-    snum = unicodeSuits.findIndex(element => element==s);
-    sname = suitNames[snum];
-
-    theHTML += `
-      <div class="card ${sname}" onclick="savePreselect(this);" data-card="${c}">
-        <span class="cardrank">${r}</span>
-        <span class="cardsuit ${sname}">${s}</span>
-      </div>
-    `;
-    return theHTML;
-  }
-  function buildRangeTable(who) {
-    const cards = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
-    let tableHTML = '';  
-    cards.forEach((card, index) => {
-      tableHTML += '<tr>';                
-      cards.slice(0,index).forEach(innerCard => {
-        tableHTML += buildRangeButton(who, innerCard, card, 'o');
-      });
-      cards.slice(index).forEach(innerCard => {
-        if (card==innerCard) {
-          tableHTML += buildRangeButton(who, card, innerCard, '');
-        } else {
-          tableHTML += buildRangeButton(who, card, innerCard, 's');
-        }          
-      });       
-      tableHTML += '</tr>';        
-    });
-    return tableHTML;
-  }
-  function getCombosByType(type, usecombos) {
-    let c = [];
-    usecombos.forEach(h=>{
-      let thistype = binHand2type(h);
-      if (type==thistype) {
-        c.push(h);
-      }
-    });
-    return c;
-  }
-
-  function updateCombos(d,musthave){
-    theseCombos = [];    
-    //add musthave (preselects) back to the deck(d) temporarily
-    //only create combos that each of the must have cards'
-    //if there is only 1 or no must haves, return the relevant combos
-    let filteredMustHave = musthave.filter(item => item !== undefined && item !== 0);
-    let thisd = d.concat(filteredMustHave);
-
-    thisd.forEach(function(c1,a){ thisd.forEach(function(c2,b){ if (b>a) { 
-      let mhexists=true;
-      musthave.forEach((p)=>{
-        if (typeof p!='undefined') {
-          if (p>0) {
-            if (![c1,c2].includes(p)) mhexists=false;
-          }
-        }
-      });
-      if (mhexists) theseCombos.push([c1,c2]); 
-    } }); });
-    return theseCombos;
-  }
-
-  function displayCombos(who,c){      
-    let types = new Map();     
-    
-    c.forEach(h=>{
-      let thistype = binHand2type(h);
-      if (types.has(thistype)) {
-        cnt = types.get(thistype);
-        types.set(thistype, cnt+1);
-      } else {
-        types.set (thistype,1);
-      }
-    });
-
-    let usecombos=(who=='hero'?heroCombos:villainCombos);
-    let userange = (who=='hero'?heroRange:villainRange);
-
-    types.forEach(function(v,k){
-      $(`#${who}_${k}`).find('.combo-num').html(v);
-      $(`#${who}_${k}`).find('.combo-perc').html((Math.round(v/usecombos.length*10000,5)/100).toLocaleString()+'%');
-    });
-
-    //count selected type combos
-    let numcombos=0;
-    $(`.hand-range-button.${who}.selected`).each(function() {
-        numcombos += parseInt($(this).find('.combo-num').html());
-    });
-
-    $(`#${who}_selcombos`).html(numcombos);
-    $(`#${who}_totcombos`).html(usecombos.length);
-    $(`#${who}_rangeperc`).html(0);
-  }
-
-  function buildRangeButton(who, innerCard, card, ext) {
-    let comboText = `<span class="combo-num">abc</span><span class="combo-perc">xyz</span>`;
-    if (who!='hero' && who!='villain') comboText = '';
-    return `<td>
-      <button class="hand-range-button ${who}" id="${who}_${innerCard}${card}${ext}" data-type="${innerCard}${card}${ext}">
-        ${innerCard}${card}${ext}
-        ${comboText}
-      </button>
-      </td>`;
-  }
-  function saveRange(who) {
-    let numcombos=0;
-    if (who=='hero') {
-      heroRange = [];
-      $(`.hand-range-button.${who}.selected`).each(function() {
-        let value = $(this).data('type').toLocaleString();
-        numcombos += parseInt($(this).find('.combo-num').html());
-        heroRange.push(value);
-      });
-      
-    }
-
-    if (who=='villain') {
-      villainRange = [];
-      $(`.hand-range-button.${who}.selected`).each(function() {
-        let value = $(this).data('type').toLocaleString();
-        numcombos += parseInt($(this).find('.combo-num').html());
-        villainRange.push(value);
-      });
-      //console.log (villainRange, villainCombos);        
-    }
-    
-    $(`#${who}_selcombos`).html(numcombos);
-    $(`#${who}_rangeperc`).html(Math.round(numcombos / parseInt($(`#${who}_totcombos`).html())*10000)/100);
-  }
-  function initResults() {
-    $('.hand-range-button.hero').each(function() {
-        let value = $(this).data('type').toLocaleString();
-        resultset.push([value,0,0]);
-        //0 - hand type
-        //1 - occurrences
-        //2 - wins
-      });
-  }
-  function resetResults() {
-    //Initial Opacity of result buttons (based on hero range)
-    $('.hand-range-button.result').css("opacity", "0.2")
-    $('.hand-range-button.result').css('background', 'linear-gradient(to right, #4CAF50 ' + 0 + '%, #f0f0f0 ' + 0 + '%)');
-    heroRange.forEach(e=>{
-      $('#result_'+e).css("opacity", ".5"); 
-    })
-
-    stopContinuousTrials();
-    games=0;
-    eligibles=0;      
-    
-    resultset = [];
-    initResults();    
-  }
-  function updateResults() {
-    maxo=0;
-    resultset.forEach(e=>{
-      o=0; w=0;
-      if (eligibles) {
-      o = e[1]/eligibles;
-      w = e[2]/e[1];
-      }
-
-      //Occurence opacity
-      if (o > maxo) maxo=o;
-      operc = o/lastmaxo;
-      if (operc > 1) operc = 1;
-      operc = (.5+(operc*.5)).toFixed(2);
-      $('#result_'+e[0]).css("opacity", operc); 
-
-      //Win fill gradient
-      fillperc = Math.ceil(w*100);
-      whiteperc = 1-fillperc;
-      $('#result_'+e[0]).css('background', 'linear-gradient(to right, #4CAF50 ' +fillperc + '%, #f0f0f0 ' + whiteperc + '%)');
-      $('#result_'+e[0]).attr('title', e[0] + ' - occurs: ' + (o*100).toFixed(3) + '%, wins: ' + (w*100).toFixed(2) +'%');
-
-      //Game & Eligibles
-      $("#totalGames").html(games.toLocaleString());
-      $("#eligibleGames").html(eligibles.toLocaleString());
-
-    });
-    lastmaxo = maxo;
-  }
-  function selectRangeForPosition(position,who) {
-      if (position=='INV') {
-          $('.hand-range-button' + '.' + who + '.selected').addClass('temp');
-          $('.hand-range-button' + '.' + who + ':not(.selected)').addClass('selected');
-          $('.hand-range-button' + '.' + who + '.temp').removeClass('selected');
-          $('.hand-range-button' + '.' + who + '.temp').removeClass('temp');
-          return;
-      }
-
-      $('.' + who + ' .hand-range-button').removeClass('selected');
-      const ranges = {
-        'ALL': [], 
-        'CUSTOM': [0], 
-        'UTG':    ['AA','KK','QQ','JJ','TT','99','88','77','AKo','AQo','AKs','AQs','AJs','ATs','A5s','KQs','KJs','KTs','QJs','QTs','JTs','J9s','98s','T9s'], 
-        'UTG+1':  ['AA','KK','QQ','JJ','TT','99','88','77','AKo','AQo','AKs','AQs','AJs','ATs','A5s','KQs','KJs','KTs','QJs','QTs','JTs','J9s','98s','T9s'], 
-        'UTG+2':  ['AA','KK','QQ','JJ','TT','99','88','77','AKo','AQo','AJo','AKs','AQs','AJs','ATs','A9s','A8s','A5s','A4s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','98s','T9s'], 
-        'LJ':     ['AA','KK','QQ','JJ','TT','99','88','77','66','55','AKo','AQo','AJo','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','87s','76s'], 
-        'HJ':     ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','AKo','AQo','AJo','ATo','KQo','KJo','QJo','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','T8s','98s','87s','76s','65s'], 
-        'CO':     ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKo','AQo','AJo','ATo','KQo','KJo','KTo','QJo','QTo','JTo','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','QJs','QTs','Q9s','Q8s','JTs','J9s','J8s','T9s','T8s','98s','97s','87s','86s','76s','65s','54s'], 
-        'BTN':    ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKo','AQo','AJo','ATo','A9o','A8o','A7o','A6o','A5o','A4o','A3o','A2o','KQo','KJo','KTo','K9o','QJo','QTo','Q9o','JTo','J9o','T9o','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','JTs','J9s','J8s','J7s','J6s','T9s','T8s','T7s','T6s','98s','97s','96s','87s','86s','85s','76s','75s','65s','54s','43s'], 
-        'SB':     ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKo','AQo','AJo','ATo','A9o','A8o','A7o','A6o','A5o','A4o','A3o','A2o','KQo','KJo','KTo','K9o','K8o','QJo','QTo','Q9o','Q8o','JTo','J9o','J8o','T9o','T8o','98o','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','Q4s','JTs','J9s','J8s','J7s','J6s','T9s','T8s','T7s','T6s','98s','97s','96s','95s','87s','86s','85s','84s','76s','75s','74s','65s','64s','63s','54s','53s','43s','32s'], 
-        'BB':     ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKo','AQo','AJo','ATo','A9o','A8o','A7o','A6o','A5o','A4o','KQo','KJo','KTo','K9o','QJo','QTo','Q9o','JTo','J9o','T9o','98o','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','JTs','J9s','J8s','J7s','T9s','T8s','T7s','T6s','98s','97s','96s','87s','86s','85s','76s','75s','65s','64s','54s','53s','43s']
-      };
-      if (ranges[position].length !== 0) {
-        ranges[position].forEach(hand => {
-          $('#' + who + '_' + hand).addClass('selected');
-        });
-      } else {        
-          $('.hand-range-button' + '.' + who).addClass('selected');        
-      }
-    }
-
-  //Initialize the deck and all combos
-  let maxo=0;
-  let lastmaxo=0;
-  let heroRange = [];
-  let villainRange = [];
-  let resultset = [];
-  let deckbin = [];
-  let heroCombos = [];
-  let villainCombos = [];
-  let preselects = [];
-  let preselect_index = 0;
-  deckbin = createDeck_bin(false);
-  heroCombos = updateCombos(deckbin,[preselects[0],preselects[1]]);
-  villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);  
-  
-  var continuousTrialsInterval;
-  var games=0;
-  var eligibles=0;
-  var trialsets=0;
-  var setstotime=10;
-  var startTime=null;
-  var startHands=null;
-  var endHands=null;
-  var fastest_handspeed=0;
-
-  function continuousTrials(num, v) {     
-    continuousTrialsInterval = setInterval(() => { runTrials(num, v); }, 1);
-  }
-  
-  function stopContinuousTrials() {
-    clearInterval(continuousTrialsInterval);
-  }
-
-  function calculateHandsPerSecond(m,h) {
-    var handsPerSecond = h / (m / 1000);
-    if (handsPerSecond > fastest_handspeed) fastest_handspeed = handsPerSecond
-    $("#GPS").html        (parseInt(handsPerSecond).toLocaleString());
-    $("#fastestGPS").html (parseInt(fastest_handspeed).toLocaleString());
-  }
-
-  function runTrials(numTrials, v) {      
-    if (trialsets%setstotime==0) {
-      if (startTime!=null) {
-        endTime = Date.now();
-        endHands = games;
-        calculateHandsPerSecond (endTime - startTime, endHands - startHands);
-      }
-      startTime = Date.now();
-      startHands = games;
-    }      
-    for (var i = 0; i < numTrials; i++) recordTrial(v);
-    trialsets++;
-    updateResults();
-  }
-
-  function doTrial(v) {
-    d = shuffleDeckFY(deckbin,v);
-    resultindex = -1;
-    eligible = false;
-    let dealtcards = [];
-    let common=[];         
-    let p0=0, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p8=0, p9=0;  //p7 is burn
-    
-    //Deal each player hand
-    let playerHands = [];
-    for(i=1;i<=parseInt($('#players').val());i++) {      
-      let h=[];      
-      let n=2;
-
-      if (i==1) {
-        //Hero
-        p0 = preselects[0];
-        p1 = preselects[1];
-        
-        if (typeof p0!='undefined' && p0>0) {
-          h.push(p0); n--;
-        }
-        if (typeof p1!='undefined' && p1>0) {
-          h.push(p1); n--;
-        }
-
-        if (n>0) {
-          fromdeck = dealCards(d, n, v);
-          dealtcards.push(...fromdeck);
-          h.push(...fromdeck);
-        }
-        p = [h,binHand2type(h),0]
-        //0 -- hand array //1 -- hand type  //2 -- rank
-
-        //is Hero eligible?
-        if (heroRange.indexOf(p[1])===-1) {
-          //NO: not in hero range, put cards back in deck and bail
-          d.push(...dealtcards);
-          return;
-        }
-
-      } else {
-        //Villain        
-        
-        if (i==2) {
-          p8 = preselects[8];
-          p9 = preselects[9];
-          
-          if (typeof p8!='undefined' && p8>0) {
-            h.push(p8); n--;
-          }
-          if (typeof p9!='undefined' && p9>0) {
-            h.push(p9); n--;
-          }
-        }
-
-        if (n>0) {
-          fromdeck = dealCards(d, n, v);
-          dealtcards.push(...fromdeck);
-          h.push(...fromdeck);
-        }
-        p = [h,binHand2type(h),0]
-        //0 -- hand array //1 -- hand type  //2 -- rank
-
-        //is at least one Villain eligible?
-        if (!eligible && villainRange.indexOf(p[1])>=0) {
-          //YES, don't need to check anymore...
-          eligible = true;
-        }
-      }
-      
-      playerHands.push(p);
-    }
-
-    //Eligible game?
-    if (eligible) { 
-      //YES: Get result index and record occurrence
-      eligibles++;        
-      resultindex = resultset.findIndex(group => group[0] === playerHands[0][1])
-      resultset[resultindex][1]++;
-
-    } else {
-      //NO: Villains were eligible, so put cards back in deck and bail
-      //playerHands.forEach(e=>{d.push(...e[0])});  
-      d.push(...dealtcards);   
-      return;
-    }
-
-    //Deal common cards
-    p2 = preselects[2];
-    p3 = preselects[3];
-    p4 = preselects[4];
-    p5 = preselects[5];
-    p6 = preselects[6];
-
-    n=5;
-    if (typeof p2!='undefined' && p2>0) {
-      common.push(p2);  n--;
-    }
-    if (typeof p3!='undefined' && p3>0) {
-      common.push(p3);  n--;
-    }
-    if (typeof p4!='undefined' && p4>0) {
-      common.push(p4);  n--;
-    }
-    if (typeof p5!='undefined' && p5>0) {
-      common.push(p5);  n--;
-    }
-    if (typeof p6!='undefined' && p6>0) {
-      common.push(p6);  n--;
-    }
-
-    if (n>0) {
-      fromdeck = dealCards(d, n, v);
-      dealtcards.push(...fromdeck);
-      common.push(...fromdeck);
-    }    
-    if (v) console.log("Deck now:", d);
-
-    //Rank each player hand (if in range)      
-    playerHands.forEach(function(e,index){
-      playerHands[index][2] = rankHand_bin(common.concat(e[0]), 5, v, true);
-    });
-
-    //Compare players
-    bestPlayer=-1;
-    bestRank=0;
-    numChops=1;
-    playerHands.forEach(function(e,index){
-      if (v) console.log(binHand2str(e[0]));
-      if (e[2]>bestRank) {
-        bestRank = e[2];
-        bestPlayer = index;
-        numChops=1;
-      } else if (e[2]==bestRank) numChops++;
-    });
-
-    if (v) console.log(binHand2str(common));      
-    if (v) console.log ('Winner', bestPlayer, bestRank, numChops, d)
-
-    //Record hero wins
-    if (bestPlayer==0) {        
-      resultset[resultindex][2]+=(1/numChops);
-    }      
-
-    //Put the dealt cards back in the deck    
-    d.push(...dealtcards);
-    
-
-    return;
-  }
-
-  function recordTrial(v) {
-    doTrial(v);
-    games++;
-  }
-
-</script>
-
+  <script src="includes/equity_ui.js"></script>
+  <script src="includes/equity_onload.js"></script>
+  <script src="includes/equity_sim.js"></script>  
+  <script src="includes/equity_inits.js"></script>  
 </head>
+
 <body>
-  <br><br>
+  <br>
   <div class="player-selection">
     <label for="players">Players:</label>
     <select id="players">
@@ -710,14 +39,14 @@
         <div class="quick-select-buttons">
           <button class="quick-select" data-position="ALL">All</button>
           <button class="quick-select" data-position="CUSTOM">Custom</button>
-          <button class="quick-select" data-position="UTG">UTG</button>
-          <button class="quick-select" data-position="UTG+1">UTG+1</button>
-          <button class="quick-select" data-position="UTG+2">UTG+2</button>
-          <button class="quick-select" data-position="LJ">LJ</button>
-          <button class="quick-select" data-position="HJ">HJ</button>
-          <button class="quick-select" data-position="CO">CO</button>
-          <button class="quick-select" data-position="BTN">BTN</button>
-          <button class="quick-select" data-position="SB">SB</button>
+          <button class="quick-select" data-position="UTG">RFI: UTG</button>
+          <button class="quick-select" data-position="UTG+1">RFI: UTG+1</button>
+          <button class="quick-select" data-position="UTG+2">RFI: UTG+2</button>
+          <button class="quick-select" data-position="LJ">RFI: LJ</button>
+          <button class="quick-select" data-position="HJ">RFI: HJ</button>
+          <button class="quick-select" data-position="CO">RFI: CO</button>
+          <button class="quick-select" data-position="BTN">RFI: BTN</button>
+          <button class="quick-select" data-position="SB">RFI: SB</button>
           <button class="quick-select" data-position="BB">BB</button>
           <button class="quick-select" data-position="INV">Inverse</button>
         </div>
@@ -734,14 +63,14 @@
         <div class="quick-select-buttons">
           <button class="quick-select" data-position="ALL">All</button>
           <button class="quick-select" data-position="CUSTOM">Custom</button>
-          <button class="quick-select" data-position="UTG">UTG</button>
-          <button class="quick-select" data-position="UTG+1">UTG+1</button>
-          <button class="quick-select" data-position="UTG+2">UTG+2</button>
-          <button class="quick-select" data-position="LJ">LJ</button>
-          <button class="quick-select" data-position="HJ">HJ</button>
-          <button class="quick-select" data-position="CO">CO</button>
-          <button class="quick-select" data-position="BTN">BTN</button>
-          <button class="quick-select" data-position="SB">SB</button>
+          <button class="quick-select" data-position="UTG">RFI: UTG</button>
+          <button class="quick-select" data-position="UTG+1">RFI: UTG+1</button>
+          <button class="quick-select" data-position="UTG+2">RFI: UTG+2</button>
+          <button class="quick-select" data-position="LJ">RFI: LJ</button>
+          <button class="quick-select" data-position="HJ">RFI: HJ</button>
+          <button class="quick-select" data-position="CO">RFI: CO</button>
+          <button class="quick-select" data-position="BTN">RFI: BTN</button>
+          <button class="quick-select" data-position="SB">RFI: SB</button>
           <button class="quick-select" data-position="BB">BB</button>
           <button class="quick-select" data-position="INV">Inverse</button>
         </div>
@@ -756,40 +85,37 @@
   <hr size="1" noshade>
 
   <div class="card-container-wrapper">
-  <div class="card-container">
-    <div class="hero-cards">
-      <span class="cardtitle">Hero:</span><br>
-      <div class="cardpreselect empty" id="preselect0" data-index="0" data-title="Hero Card 1"></div>
-      <div class="cardpreselect empty" id="preselect1" data-index="1" data-title="Hero Card 2"></div>
-    </div>
-    &nbsp;
-    &nbsp;    
-  
-    <div class="common-cards">
-      <span class="cardtitle">Common:</span><br>
-      <div class="cardpreselect empty" id="preselect2" data-index="2" data-title="Flop Card 1"></div>
-      <div class="cardpreselect empty" id="preselect3" data-index="3" data-title="Flop Card 2"></div>
-      <div class="cardpreselect empty" id="preselect4" data-index="4" data-title="Flop Card 3"></div>
-      <div class="cardpreselect empty" id="preselect5" data-index="5" data-title="Turn Card"></div>
-      <div class="cardpreselect empty" id="preselect6" data-index="6" data-title="River Card"></div>
-    </div>
-    &nbsp;
-  
-    <div class="burn-card">
-      <span class="cardtitle">Burn:</span><br>
-      <div class="cardpreselect empty" id="preselect7" data-index="7" data-title="Burn Card"></div>
-    </div>    
-    &nbsp;
-    &nbsp;
-  
-    <div class="villain-cards">
-      <span class="cardtitle">Villain:</span><br>
-      <div class="cardpreselect empty" id="preselect8" data-index="8" data-title="Villain Card 1"></div>
-      <div class="cardpreselect empty" id="preselect9" data-index="9" data-title="Villain Card 2"></div>
+    <div class="card-container">
+      <div class="hero-cards">
+        <span class="cardtitle">Hero:</span><br>
+        <div class="cardpreselect empty" id="preselect0" data-index="0" data-title="Hero Card 1"></div>
+        <div class="cardpreselect empty" id="preselect1" data-index="1" data-title="Hero Card 2"></div>
+      </div>
+      &nbsp;&nbsp;    
+    
+      <div class="common-cards">
+        <span class="cardtitle">Common:</span><br>
+        <div class="cardpreselect empty" id="preselect2" data-index="2" data-title="Flop Card 1"></div>
+        <div class="cardpreselect empty" id="preselect3" data-index="3" data-title="Flop Card 2"></div>
+        <div class="cardpreselect empty" id="preselect4" data-index="4" data-title="Flop Card 3"></div>
+        <div class="cardpreselect empty" id="preselect5" data-index="5" data-title="Turn Card"></div>
+        <div class="cardpreselect empty" id="preselect6" data-index="6" data-title="River Card"></div>
+      </div>
+      &nbsp;
+    
+      <div class="burn-card">
+        <span class="cardtitle">Burn:</span><br>
+        <div class="cardpreselect empty" id="preselect7" data-index="7" data-title="Burn Card"></div>
+      </div>    
+      &nbsp;&nbsp;
+    
+      <div class="villain-cards">
+        <span class="cardtitle">Villain:</span><br>
+        <div class="cardpreselect empty" id="preselect8" data-index="8" data-title="Villain Card 1"></div>
+        <div class="cardpreselect empty" id="preselect9" data-index="9" data-title="Villain Card 2"></div>
+      </div>
     </div>
   </div>
-  </div>
-
   
   <hr size="1" noshade>
   <div class="hand-range-selector results">

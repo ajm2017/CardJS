@@ -1,7 +1,7 @@
   Range Race:
    - results: aggregate win % (equity)
-   - preset flop
-   - preset burn card
-   - preset hold cards
+  x- preset flop
+  x- preset burn card
+  x- preset hold cards
   x- rollover button show combos
    - add thread for processing

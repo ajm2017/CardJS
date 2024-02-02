@@ -100,6 +100,14 @@ function dealCards(d, numCards, v) {
   return hand;
 }
 
+function insertCard(c, d) {
+  if (typeof c!== 'undefined') {
+    if (c > 0) {
+      d.push(c);
+      d.sort((a,b)=> a-b);
+    }
+  }
+}
 
 function rankHand_bin(hand, handSize, v, dosubs) {     
   
