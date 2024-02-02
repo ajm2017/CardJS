@@ -21,7 +21,7 @@
             saveRange(who);
             resetResults();
           });  
-          displayCombos(who, deckbin);
+          if (who=='hero') { displayCombos(who, heroCombos); } else { displayCombos(who, villainCombos); }
         }        
       }
 
@@ -33,7 +33,13 @@
       $('.hand-range-button:not(.result)').hover(function(e) {      
 
         let t = $(this).data('type');
-        let theseCombos = getCombos(t,deckbin);
+
+        let theseCombos=[];
+        if ($(this).hasClass('hero')) {
+          theseCombos = getCombosByType(t,heroCombos);
+        } else {
+          theseCombos = getCombosByType(t,villainCombos);
+        }
 
         hoverTimer = setTimeout(function() {
 
@@ -65,6 +71,7 @@
         preselect_index = $(this).data('index');
         let cardtitle = $(`#preselect${preselect_index}`).data('title');
 
+        deckbin.sort((a,b)=> a-b);
         $('.card-picker').html(buildCardSelector(deckbin, cardtitle));
         if (preselectExists(preselects,preselect_index)) {
           $('.card-picker-wrapper .clearbutton').show();
@@ -79,9 +86,15 @@
 
 
       $('#preselect_clear').on('click', function() {                  
+        //put the card back in the deck and update the combos array
         insertCard(preselects[preselect_index],deckbin);
-        preselects[preselect_index] = 0;
+        preselects[preselect_index] = 0;        
+        heroCombos = updateCombos(deckbin,[preselects[0],preselects[1]]);
+        villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);        
         $(`#preselect${preselect_index}_card`).hide();       
+        $('.combo-num').html('0');
+        displayCombos('hero', heroCombos);
+        displayCombos('villain', villainCombos);
       });
 
 
@@ -101,8 +114,31 @@
     insertCard(preselects[preselect_index],deckbin);
     console.log (preselects[preselect_index]);   
 
+    //set it and remove from the deck
     preselects[preselect_index] = cbin;
     deckbin.splice(deckbin.indexOf(cbin),1);
+    heroCombos = updateCombos(deckbin,[preselects[0],preselects[1]]);
+    villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);
+
+    //update the range combos
+    $('.combo-num').html('0');
+    $('.combo-perc').html('0.0%');
+    displayCombos('hero', heroCombos);
+    displayCombos('villain', villainCombos);
+
+    //default select the appopriate range
+    console.log(preselect_index)
+    switch (preselect_index) {
+      case 0:
+      case 1:
+        console.log ('test');
+        $('.hand-range-button.hero').removeClass('selected');
+        break;
+
+      case 8:
+      case 9:
+        break;
+    }
 
     //show preselect card
     var p = $(`#preselect${preselect_index}`);
@@ -116,7 +152,8 @@
     $(`#preselect${preselect_index}_card .cardsuit`).addClass(sname);
     c.css({
       top: offset.top+5,
-      left: offset.left+4
+      left: offset.left+4,
+      display: 'flex'
     }).fadeIn(100);
 
 
@@ -220,9 +257,9 @@
     });
     return tableHTML;
   }
-  function getCombos(type, d) {
+  function getCombosByType(type, usecombos) {
     let c = [];
-    combos.forEach(h=>{
+    usecombos.forEach(h=>{
       let thistype = binHand2type(h);
       if (type==thistype) {
         c.push(h);
@@ -230,10 +267,33 @@
     });
     return c;
   }
-  function displayCombos(who, d){      
+
+  function updateCombos(d,musthave){
+    theseCombos = [];    
+    //add musthave (preselects) back to the deck(d) temporarily
+    //only create combos that each of the must have cards'
+    //if there is only 1 or no must haves, return the relevant combos
+    let filteredMustHave = musthave.filter(item => item !== undefined && item !== 0);
+    let thisd = d.concat(filteredMustHave);
+
+    thisd.forEach(function(c1,a){ thisd.forEach(function(c2,b){ if (b>a) { 
+      let mhexists=true;
+      musthave.forEach((p)=>{
+        if (typeof p!='undefined') {
+          if (p>0) {
+            if (![c1,c2].includes(p)) mhexists=false;
+          }
+        }
+      });
+      if (mhexists) theseCombos.push([c1,c2]); 
+    } }); });
+    return theseCombos;
+  }
+
+  function displayCombos(who,c){      
     let types = new Map();     
     
-    combos.forEach(h=>{
+    c.forEach(h=>{
       let thistype = binHand2type(h);
       if (types.has(thistype)) {
         cnt = types.get(thistype);
@@ -243,13 +303,15 @@
       }
     });
 
+    let usecombos=(who=='hero'?heroCombos:villainCombos);
+
     types.forEach(function(v,k){
       $(`#${who}_${k}`).find('.combo-num').html(v);
-      $(`#${who}_${k}`).find('.combo-perc').html((Math.round(v/combos.length*10000,5)/100).toLocaleString()+'%');
+      $(`#${who}_${k}`).find('.combo-perc').html((Math.round(v/usecombos.length*10000,5)/100).toLocaleString()+'%');
     });
 
     $(`#${who}_selcombos`).html(0);
-    $(`#${who}_totcombos`).html(combos.length);
+    $(`#${who}_totcombos`).html(usecombos.length);
     $(`#${who}_rangeperc`).html(0);
   }
   function buildRangeButton(who, innerCard, card, ext) {
@@ -263,28 +325,29 @@
       </td>`;
   }
   function saveRange(who) {
-    let combos=0;
+    let numcombos=0;
     if (who=='hero') {
       heroRange = [];
       $(`.hand-range-button.${who}.selected`).each(function() {
         let value = $(this).data('type').toLocaleString();
-        combos += parseInt($(this).find('.combo-num').html());
+        numcombos += parseInt($(this).find('.combo-num').html());
         heroRange.push(value);
       });
-      console.log (heroRange, combos);
+      
     }
 
     if (who=='villain') {
       villainRange = [];
       $(`.hand-range-button.${who}.selected`).each(function() {
         let value = $(this).data('type').toLocaleString();
-        combos += parseInt($(this).find('.combo-num').html());
+        numcombos += parseInt($(this).find('.combo-num').html());
         villainRange.push(value);
       });
-      console.log (villainRange, combos);        
+      console.log (villainRange, villainCombos);        
     }
-    $(`#${who}_selcombos`).html(combos);
-    $(`#${who}_rangeperc`).html(Math.round(combos / parseInt($(`#${who}_totcombos`).html())*10000)/100);
+    
+    $(`#${who}_selcombos`).html(numcombos);
+    $(`#${who}_rangeperc`).html(Math.round(numcombos / parseInt($(`#${who}_totcombos`).html())*10000)/100);
   }
   function initResults() {
     $('.hand-range-button.hero').each(function() {
@@ -378,11 +441,13 @@
   let villainRange = [];
   let resultset = [];
   let deckbin = [];
-  let combos = [];
+  let heroCombos = [];
+  let villainCombos = [];
   let preselects = [];
   let preselect_index = 0;
   deckbin = createDeck_bin(false);
-  deckbin.forEach(function(c1,a){ deckbin.forEach(function(c2,b){ if (b>a) { combos.push([c1,c2]); } }); });
+  heroCombos = updateCombos(deckbin,[preselects[0],preselects[1]]);
+  villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);  
   
   var continuousTrialsInterval;
   var games=0;
