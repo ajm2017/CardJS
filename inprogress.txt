@@ -1,7 +1,11 @@
   Range Race:
+  ===============================================
    - results: aggregate win % (equity)
+   - reset simulation figures
+   - detect convergence?
+   - add thread for processing
+   - add a variety of ther preset ranges (calling ranges, 4bet ranges, etc.)
   x- preset flop
   x- preset burn card
   x- preset hold cards
-  x- rollover button show combos
-   - add thread for processing
+  x- rollover button show combos   
