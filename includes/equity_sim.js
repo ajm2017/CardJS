@@ -27,6 +27,21 @@
     for (var i = 0; i < numTrials; i++) recordTrial(v);
     trialsets++;
     updateResults();
+    if (detectConvergence) {
+      if (convergenceTest(lastEquity, currentEquity, usePrecision)) {
+        numConvergences++;
+        if (numConvergences>=minConvergences) {
+          //We've converged enough times in a row
+          stopContinuousTrials();
+        }
+      } else {numConvergences=0;}
+      lastEquity = currentEquity;
+    }
+  }
+
+  function convergenceTest(f1, f2, precision) {
+    if ((Math.abs(f2-f1)) <= precision) return true; 
+    return false;
   }
 
   function doTrial(v) {

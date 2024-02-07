@@ -15,9 +15,17 @@ villainCombos = updateCombos(deckbin,[preselects[8],preselects[9]]);
 var continuousTrialsInterval;
 var games=0;
 var eligibles=0;
+var lastEligibles=0;
 var trialsets=0;
 var setstotime=10;
 var startTime=null;
 var startHands=null;
 var endHands=null;
 var fastest_handspeed=0;
+var lastEquity=0;
+var currentEquity=0;
+var numConvergences=0;
+var usePrecision=.01;
+var minConvergences=7;
+var detectConvergence=true;
+

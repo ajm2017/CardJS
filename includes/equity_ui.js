@@ -254,7 +254,6 @@ function savePreselect(e) {
         numcombos += parseInt($(this).find('.combo-num').html());
         villainRange.push(value);
       });
-      //console.log (villainRange, villainCombos);        
     }
     
     $(`#${who}_selcombos`).html(numcombos);
@@ -281,7 +280,8 @@ function savePreselect(e) {
 
     stopContinuousTrials();
     games=0;
-    eligibles=0;      
+    eligibles=0;
+    lastEligibles=0;
     
     resultset = [];
     initResults();    
@@ -292,6 +292,10 @@ function savePreselect(e) {
     startHands=null;
     endHands=null;
     fastest_handspeed=0;
+
+    currentEquity=0;
+    lastEquity=0;
+    numConvergences=0;
   }
 
   function updateResults() {
@@ -325,7 +329,9 @@ function savePreselect(e) {
     });
     $("#numWins").html(sumw.toLocaleString());
     $("#numEligible").html(eligibles.toLocaleString());
-    $("#totEquity").html(((sumw/eligibles*10000).toFixed(3)/100).toLocaleString() + '%');
+    
+    currentEquity = ((sumw/eligibles*10000).toFixed(3)/100);
+    $("#totEquity").html(currentEquity.toLocaleString() + '%');
     lastmaxo = maxo;
   }
   
