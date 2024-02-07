@@ -118,25 +118,37 @@
   </div>
   
   <hr size="1" noshade>
-  <div class="hand-range-selector results">
-    Results:       
-    <table class="rangematrix" id="resultRange">
-      <tbody></tbody>
-    </table>
+  <div class="results-container">
+    <div class="hand-range-selector results">
+      Hero Results:       
+      <table class="rangematrix" id="resultRange">
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div style="width:100%; margin-left:50px;">
+      <br><div class="countlabel">Total Games:</div><div class="countnum" id="totalGames"></div>
+      <br><div class="countlabel">Eligible Games:</div><div class="countnum" id="eligibleGames"></div>
+      <br><div class="countlabel">Games / s (GPS):</div><div class="countnum" id="GPS">0</div>
+      <br><div class="countlabel">Best GPS:</div><div class="countnum" id="fastestGPS">0</div>
+      <br><br>
+      <br><div class="countlabel">Wins:</div>
+        <div class="countnum" id="numWins">0</div> / 
+        <div class="countnum" id="numEligible">0</div>
+
+      <br><br><div class="countlabel">Aggregate Hero Equity:</div>
+        <div class="countnum big" id="totEquity">0</div>
+
+    </div>
   </div>
 
   <hr size="1" noshade>
-  <button onclick="recordTrial(true); updateResults();">1 Trial</button>
-  <button onclick="runTrials(10000, false);">10,000 Trials</button>
-  <button onclick="continuousTrials(5000, false); $('#stopButton').prop('disabled', false);">Continuous</button>
+  <button onclick="resetResults(); recordTrial(true); updateResults();">1 Trial</button>
+  <button onclick="resetResults(); runTrials(10000, false);">10,000 Trials</button>
+  <button onclick="resetResults(); continuousTrials(5000, false); $('#stopButton').prop('disabled', false);">Continuous</button>
   <button id="stopButton" onclick="stopContinuousTrials(); $(this).prop('disabled', true);" disabled>Stop</button>
   
-  <hr size="1" noshade>
-  <br><div class="countlabel">Total Games:</div><div class="countnum" id="totalGames"></div>
-  <br><div class="countlabel">Eligible Games:</div><div class="countnum" id="eligibleGames"></div>
-  <br><div class="countlabel">Games / s (GPS):</div><div class="countnum" id="GPS">0</div>
-  <br><div class="countlabel">Best GPS:</div><div class="countnum" id="fastestGPS">0</div>
-
+  
   <div class="card-combo-overlay"></div>
   <div class="card-picker-wrapper"><div class="clearbutton"><button id="preselect_clear">Clear</button></div><div class="card-picker"></div></div>
 

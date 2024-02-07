@@ -36,9 +36,17 @@
   }
 
   .countnum {
-    width:150px;
+    width:100px;
     display:inline-flex;
   }
+
+  .countnum.big {
+    width:100px;
+    display:inline-flex;
+    font-size:x-large;
+  }
+
+
 
   .hand-range-button {
       width: 30px;
@@ -109,6 +117,14 @@
     flex-direction: row; 
     justify-content: space-between; 
     align-items: flex-start; 
+  }
+
+  .results-container {
+    display: flex;
+    flex-direction: row; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+
   }
 
   .hand-range-selector {

@@ -1,7 +1,7 @@
   Range Race:
   ===============================================
-   - results: aggregate win % (equity)
-   - reset simulation figures
+  x- results: aggregate win % (equity)
+  x- reset simulation figures
    - detect convergence?
    - add thread for processing
    - add a variety of ther preset ranges (calling ranges, 4bet ranges, etc.)
@@ -9,3 +9,9 @@
   x- preset burn card
   x- preset hold cards
   x- rollover button show combos   
+
+  Flop Better or Worse
+  ===============================================
+   - quiz
+    ==> set ranges randomly generate a flop, better or worse for hero?
+

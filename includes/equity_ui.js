@@ -285,15 +285,24 @@ function savePreselect(e) {
     
     resultset = [];
     initResults();    
+
+    trialsets=0;
+    setstotime=10;
+    startTime=null;
+    startHands=null;
+    endHands=null;
+    fastest_handspeed=0;
   }
 
   function updateResults() {
     maxo=0;
+    sumw=0;
     resultset.forEach(e=>{
       o=0; w=0;
       if (eligibles) {
       o = e[1]/eligibles;
       w = e[2]/e[1];
+      sumw+=e[2];
       }
 
       //Occurence opacity
@@ -314,6 +323,9 @@ function savePreselect(e) {
       $("#eligibleGames").html(eligibles.toLocaleString());
 
     });
+    $("#numWins").html(sumw.toLocaleString());
+    $("#numEligible").html(eligibles.toLocaleString());
+    $("#totEquity").html(((sumw/eligibles*10000).toFixed(3)/100).toLocaleString() + '%');
     lastmaxo = maxo;
   }
   
