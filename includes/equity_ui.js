@@ -227,11 +227,16 @@ function savePreselect(e) {
 
   function buildRangeButton(who, innerCard, card, ext) {
     let comboText = `<span class="combo-num">abc</span><span class="combo-perc">xyz</span>`;
-    if (who!='hero' && who!='villain') comboText = '';
+    let sliderText = `<input type="range" class="slider ${who}" data-target="${who}_${innerCard}${card}${ext}" min="0" max="100" value="0" step="10">`
+    if (who!='hero' && who!='villain') {
+      comboText = '';
+      sliderText = '';
+    }
     return `<td>
       <button class="hand-range-button ${who}" id="${who}_${innerCard}${card}${ext}" data-type="${innerCard}${card}${ext}">
         ${innerCard}${card}${ext}
         ${comboText}
+        ${sliderText}
       </button>
       </td>`;
   }

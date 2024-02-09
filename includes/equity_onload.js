@@ -27,18 +27,42 @@ $(document).ready(function() {
     <button class="quick-select" data-position="BB">BB</button>
     <button class="quick-select" data-position="INV">Inverse</button>
     `);
-    
+
 
     function displayRange(who) {
       $('#'+who+'Range').html(buildRangeTable(who));  
       if (who!='result') {
-        $('.' + who + '.hand-range-button').on('click', function() {  $(this).toggleClass('selected'); saveRange(who); resetResults(); });
+        $('.' + who + '.hand-range-button').on('click', function(event) {  
+
+            if ($(event.target).hasClass('slider')) {
+              // If it is, do nothing
+              return;
+            }
+
+            $(this).toggleClass('selected'); 
+
+            if ($(this).hasClass('selected')) {
+              $(this).find('.slider').val(100);
+            } else {
+              $(this).find('.slider').val(0);
+            }
+            saveRange(who); resetResults(); 
+        });
         $('.' + who + ' .quick-select').on('click', function() {
           const position = $(this).data('position');
           selectRangeForPosition(position,who);
           saveRange(who);
           resetResults();
         });  
+    
+
+        $('.' + who + '.slider').on('input change', function() {
+          var fillperc = $(this).val();
+          var whiteperc = fillperc;
+          var target = $(this).data('target');
+          $(`#${target}`).css('background', 'linear-gradient(to right, #4CAF50 ' + fillperc + '%, #f0f0f0 ' + whiteperc + '%)');
+        });
+        
         if (who=='hero') { displayCombos(who, heroCombos); } else { displayCombos(who, villainCombos); }
       }        
     }
@@ -49,6 +73,11 @@ $(document).ready(function() {
 
     var hoverTimer;
     $('.hand-range-button:not(.result)').hover(function(e) {      
+
+      if ($(e.target).hasClass('slider')) {
+        // If it is, do nothing
+        return;
+      }
 
       let t = $(this).data('type');
 

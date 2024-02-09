@@ -93,7 +93,7 @@
 
   .selected {
     background-color: #4CAF50; 
-    color: white;
+    /*color: white;*/
   }
 
   .hand-range-selector {
@@ -129,6 +129,10 @@
 
   .hand-range-selector {
     width: 48%; 
+    -webkit-user-select: none; /* Chrome, Safari, Opera */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE 10+ */
+    user-select: none;         /* Standard syntax */
   }
 
   .hand-range-button.result {
@@ -290,6 +294,39 @@
     font-weight:bold;
   }
 
+  .slider {
+    -webkit-appearance: none; /* Override default appearance */
+    appearance: none;
+    width: 90%; /* Match button width */
+    height: 5px; /* Slider thickness */
+    background: #d3d3d3; /* Slider background */
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    position: absolute;
+    bottom: -0px; /* Adjust distance from the button */
+    left: -1px;
+    border-radius: 5px;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default appearance */
+    appearance: none;
+    width: 6px; /* Width of the slider thumb */
+    height: 6px; /* Height of the slider thumb */
+    background: #2e8531; /* Green color */
+    cursor: pointer; /* Cursor on hover */
+    border-radius: 50%; /* Make it round */
+  }
+  
+  .slider::-moz-range-thumb {
+    width: 10px; /* Width of the slider thumb */
+    height: 10px; /* Height of the slider thumb */
+    background: #2e8531; /* Green color */
+    cursor: pointer; /* Cursor on hover */
+    border-radius: 50%; /* Make it round */
+  }
 
   
   
