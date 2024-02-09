@@ -27,15 +27,19 @@
     for (var i = 0; i < numTrials; i++) recordTrial(v);
     trialsets++;
     updateResults();
-    if (detectConvergence) {
-      if (convergenceTest(lastEquity, currentEquity, usePrecision)) {
-        numConvergences++;
-        if (numConvergences>=minConvergences) {
-          //We've converged enough times in a row
-          stopContinuousTrials();
-        }
-      } else {numConvergences=0;}
-      lastEquity = currentEquity;
+    if (detectConvergence) {  
+      if (lastConvEligibles!=eligibles) {
+        if (convergenceTest(lastEquity, currentEquity, usePrecision)) {
+          numConvergences++;
+          if (numConvergences>=minConvergences) {
+            //We've converged enough times in a row (with new eligibles)
+            stopContinuousTrials();
+            $('#stopButton').prop('disabled', true);
+          }
+        } else {numConvergences=0;}
+        lastEquity = currentEquity;
+        lastConvEligibles = eligibles;
+      }
     }
   }
 

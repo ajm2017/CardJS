@@ -16,6 +16,7 @@ var continuousTrialsInterval;
 var games=0;
 var eligibles=0;
 var lastEligibles=0;
+var lastConvEligibles=0;
 var trialsets=0;
 var setstotime=10;
 var startTime=null;

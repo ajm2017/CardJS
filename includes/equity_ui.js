@@ -282,6 +282,7 @@ function savePreselect(e) {
     games=0;
     eligibles=0;
     lastEligibles=0;
+    lastConvEligibles=0;
     
     resultset = [];
     initResults();    
@@ -295,7 +296,7 @@ function savePreselect(e) {
 
     currentEquity=0;
     lastEquity=0;
-    numConvergences=0;
+    numConvergences=0;    
   }
 
   function updateResults() {
