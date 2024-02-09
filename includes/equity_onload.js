@@ -13,6 +13,22 @@ $(document).ready(function() {
     });
 
 
+    $('.quick-select-buttons').html(`
+    <button class="quick-select" data-position="ALL">All</button>
+    <button class="quick-select" data-position="CUSTOM">Custom</button>
+    <button class="quick-select" data-position="UTG">RFI: UTG</button>
+    <button class="quick-select" data-position="UTG+1">RFI: UTG+1</button>
+    <button class="quick-select" data-position="UTG+2">RFI: UTG+2</button>
+    <button class="quick-select" data-position="LJ">RFI: LJ</button>
+    <button class="quick-select" data-position="HJ">RFI: HJ</button>
+    <button class="quick-select" data-position="CO">RFI: CO</button>
+    <button class="quick-select" data-position="BTN">RFI: BTN</button>
+    <button class="quick-select" data-position="SB">RFI: SB</button>
+    <button class="quick-select" data-position="BB">BB</button>
+    <button class="quick-select" data-position="INV">Inverse</button>
+    `);
+    
+
     function displayRange(who) {
       $('#'+who+'Range').html(buildRangeTable(who));  
       if (who!='result') {
@@ -116,5 +132,7 @@ $(document).ready(function() {
         $('.card-picker-wrapper').fadeOut(100);
     }
   });
+
+  
 
 });
