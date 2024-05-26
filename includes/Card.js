@@ -146,7 +146,7 @@ function rankHand_bin(hand, handSize, v, dosubs) {
     for (var i = 0; i < hand.length-1; i++) {
       for (var j = i+1; j < hand.length; j++) {
         if ((hand[i] & 0b001111) == (hand[j] & 0b001111)) return (hand[i] & 0b001111);
-      }  
+      }
     }
     return 0;
   }
