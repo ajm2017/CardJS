@@ -166,6 +166,7 @@
       common.push(...fromdeck);
     }    
     if (v) console.log("Deck now:", d);
+    if (v) console.log("Common now:", binHand2str(common));
 
     //Rank each player hand (if in range)      
     playerHands.forEach(function(e,index){
@@ -177,7 +178,7 @@
     bestRank=0;
     numChops=1;
     playerHands.forEach(function(e,index){
-      if (v) console.log(binHand2str(e[0]));
+      if (v) console.log("Player Hand:", index, binHand2str(e[0]));
       if (e[2]>bestRank) {
         bestRank = e[2];
         bestPlayer = index;

@@ -18,9 +18,11 @@ const rankNames = [
 
 const royalRanks_bin = [10,11,12,13,1];
 
-//For Bin Ranks, aces are LO
-const subranks = [.1, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
-
+//For Bin Ranks, aces are 0th element - leave .AA and .00BB open for special subrank {pair} values
+const subranksAHI = [1e-5, 1e-17, 1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6];
+const subranksALO = [1e-17, 1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5];
+const AAranksAHI = [.14, .02, .03, .04, .05, .06, .07, .08, .09, .10, .11, .12, .13];
+const BBranksAHI = [.0014, .0002, .0003, .0004, .0005, .0006, .0007, .0008, .0009, .0010, .0012, .0013, .0013];
 
 function createDeck(v) {
   //Alpha/String deck creator
@@ -110,165 +112,278 @@ function insertCard(c, d) {
 }
 
 function rankHand_bin(hand, handSize, v, dosubs) {     
+  if (v) console.log ("Ranking Hand:", binHand2str(hand));
   
-  function isFlush(hand) {
-    // Checks if a 5 card hand IS a flush
-    var handSuit = hand[0] >> 4;
-    for (var i = 1; i < 5; i++) {
-      if (hand[i] >> 4 != handSuit) return false;
-    }
-    return true;
-  }
+  
+  function getSubrank(hand, mainrank, p1, p2, s1) {    
+    let subrank = 0;
 
-  function hasFlush(hand, x) {
-    // Checks if a hand contains ANY flush of size x
-    // Create an object to count the cards in each suit
-    var suitCounts = [0, 0, 0, 0];
-    
-    // Count the number of cards in each suit
-    for (var i = 0; i < hand.length; i++) {
-      var suit = hand[i] >> 4;
-      suitCounts[suit]++;
-    }
+    switch (mainrank) {
+      //High Card
+      //R.0000ssssssssssss
+      case 1:
+        hand.forEach(element => {
+          e = (element & 0b001111)-1
+          subrank+=subranksAHI[e];
+        });
+        break;
 
-    // Check if any suit has at least `x` cards
-    for (var i = 0; i < 4; i++) {
-      if (suitCounts[i] >= x) {
-        return true;
-      }
-    }    
-    return false;
-  }  
+      //Pair
+      //R.[pair,2-14 ahigh]00sssssssssssss
+      case 2:
+        subrank+=AAranksAHI[p1-1];
+        hand = hand.filter(card => (card & 0b001111) !== p1);
+        if (v) console.log ("leftover hand:", binHand2str(hand));
+        hand.forEach(element => {
+          e = (element & 0b001111)-1
+          subrank+=subranksAHI[e];
+        });
+        break;
 
-  function hasPair_fast(hand) {
-    //any pair exists, AT LEAST !!
-    //returns the rank to be used later in two pair and three of a kind and full checks
-    for (var i = 0; i < hand.length-1; i++) {
-      for (var j = i+1; j < hand.length; j++) {
-        if ((hand[i] & 0b001111) == (hand[j] & 0b001111)) return (hand[i] & 0b001111);
-      }
-    }
-    return 0;
-  }
-
-  function hasTwoPairs_fast(hand,firstrank) {
-    //returns if another pair, other than first rank exists
-    hand = hand.filter(card => (card & 0b001111) !== firstrank);
-    for (var i = 0; i < hand.length-1; i++) {
-      for (var j = i+1; j < hand.length; j++) {
-        //if ((hand[i] & 0b001111) != firstrank && (hand[i] & 0b001111) == (hand[j] & 0b001111)) return true;
-        if ((hand[i] & 0b001111) == (hand[j] & 0b001111)) return true;
-      }  
-    }
-    return false;
-  }
-
-  function hasThreeOfAKind_fast(hand, firstrank) {
-    hand = hand.filter(card => (card & 0b001111) !== firstrank);
-    return hand.length==2;
-  }
-
-  function hasFullHouse_fast(hand,firstrank) {
-    hand = hand.filter(card => (card & 0b001111) !== firstrank);    
-    //We know there's at least pair & can't be quads, so only 2 or 3 cards left
-    //And, the remaining cards after filter MUST match rank.    
-    var handRank = hand[0] & 0b001111;
-    for (var i = 1; i < hand.length; i++) {
-       if ((hand[i] & 0b001111) != handRank) return false;
-    }
-    return true;
-  }
-     
-  function hasQuads_fast(hand, firstrank) {
-    hand = hand.filter(card => (card & 0b001111) !== firstrank);
-    return hand.length==1;
-  }
-
-  function isStraight_fast(hand) {
-    var handsize=hand.length;
-    var handRanks = hand.map(function(card) {
-      return card & 0b001111;
-    });
-    var uniqueRanks = Array.from(new Set(handRanks));
-    if (uniqueRanks.length < handsize) return false;
-
-    //ACES LO (rank value 1)
-    uniqueRanks.sort(function(a, b) { return a - b; });
-    var lowrank = uniqueRanks[0];
-    var hirank  = uniqueRanks[handsize-1];
-    if (hirank-lowrank+1==handsize) return true;
-
-    //If there is even an ace...
-    if (uniqueRanks.includes(1)) {
-      //ACES HI - change aces to 14
-      uniqueRanks = uniqueRanks.map(value => {
-        if (value === 1) {
-          return 14;  
+      //Two Pair
+      //R.[hipair,2-14 ahigh][lopair,2-14 ahigh]sssssssssssss
+      case 3:
+        if (AAranksAHI[p1-1] > AAranksAHI[p2-1]) {
+          subrank+=AAranksAHI[p1-1];
+          subrank+=BBranksAHI[p2-1];
         } else {
-          return value; 
-        }
-      });
-      uniqueRanks.sort(function(a, b) { return a - b; });
-      var lowrank = uniqueRanks[0];
-      var hirank  = uniqueRanks[handsize-1];
-      if (hirank-lowrank+1==handsize) return true;
-    }
-    return false;
-  }
+          subrank+=AAranksAHI[p2-1];
+          subrank+=BBranksAHI[p1-1];
+        }        
+        hand = hand.filter(card => (card & 0b001111) !== p1);
+        hand = hand.filter(card => (card & 0b001111) !== p2);
+        if (v) console.log ("leftover hand:", binHand2str(hand));
+        hand.forEach(element => {
+          e = (element & 0b001111)-1
+          subrank+=subranksAHI[e];
+        });
+        break;
 
-  function isStraight_fast2(hand) {
-    var handsize=hand.length;
-    var uniqueRanks = hand.map(function(card) {
-      return card & 0b001111;
-    });
+      //Three of a kind
+      //R.[trips,2-14 ahigh]00sssssssssssss
+      case 4:
+        subrank+=AAranksAHI[p1-1];
+        hand = hand.filter(card => (card & 0b001111) !== p1);
+        hand.forEach(element => {
+          e = (element & 0b001111)-1
+          subrank+=subranksAHI[e];
+        });
+        break;
+
+      //Straight
+      //R.[tothe]
+      case 5:
+        subrank+=AAranksAHI[s1-1];
+        break;
+
+      //Flush
+      //R.0000sssssssssssss
+      case 6:
+        hand.forEach(element => {
+          e = (element & 0b001111)-1
+          subrank+=subranksAHI[e];
+        });
+        break;
+
+      //Full House
+      //R.[trips,2-14 ahigh][pair,2-14 ahigh]
+      case 7:
+        subrank+=AAranksAHI[p1-1];
+        subrank+=BBranksAHI[p2-1];
+        break;
+
+      //Quads
+      //R.[quads,2-14 ahigh]00ssssssssssssss
+      case 8:
+        subrank+=AAranksAHI[p1-1];
+        hand = hand.filter(card => (card & 0b001111) !== p1);
+        hand.forEach(element => {
+          e = (element & 0b001111)-1
+          subrank+=subranksAHI[e];
+        });
+        break;
+
+      //Straight Flush
+      //R.[tothe]
+      case 9:
+        hand.forEach(element => {
+          e = (element & 0b001111)-1
+          subrank+=subranksAHI[e];
+        });
+        break;
+
+      //Royal
+      //R
+      case 10:
+        break;
+    }
     
-    //Because I always check for pair existence before calling, there will always be unique ranks equal
-    //to handsize...
-    //var uniqueRanks = Array.from(new Set(handRanks));
-    //if (uniqueRanks.length < handsize) return false;
-
-    //ACES LO (rank value 1)
-    var bail=false;
-    for (var i = 0; i < uniqueRanks.length-1; i++) {
-      for (var j = i+1; j < uniqueRanks.length; j++) {
-        if (Math.abs(uniqueRanks[i] - uniqueRanks[j]) >= handsize) {bail=true; break;}
-      }
-      if (bail) break;
-    }
-    if (!bail) return true;
-
-    //If there is even an ace...
-    if (uniqueRanks.includes(1)) {
-      //ACES HI - change aces to 14
-      uniqueRanks = uniqueRanks.map(value => {
-        if (value === 1) { return 14; } else { return value; }
-      });
-      for (var i = 0; i < uniqueRanks.length-1; i++) {
-        for (var j = i+1; j < uniqueRanks.length; j++) {
-          if (Math.abs(uniqueRanks[i] - uniqueRanks[j]) >= handsize) {return false;}
-        }  
-      }
-      return true;
-    }
-    return false;
+    return subrank;
   }
-
-  function isRoyal(hand) {
-    var handRanks = hand.map(function(card) {
-      return card & 0b001111;
-    });
-    for (var i = 0; i < royalRanks_bin.length; i++) {
-      if (!handRanks.includes(royalRanks_bin[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-
 
   // Function to find the best 5-card hand RANK from the given hand
   function findBestRank(hand, dosubs) {
     var possibleHands = [];
+
+    function isFlush(hand) {
+      // Checks if a 5 card hand IS a flush
+      var handSuit = hand[0] >> 4;
+      for (var i = 1; i < 5; i++) {
+        if (hand[i] >> 4 != handSuit) return false;
+      }
+      return true;
+    }
+  
+    function hasFlush(hand, x) {
+      // Checks if a hand contains ANY flush of size x
+      // Create an object to count the cards in each suit
+      var suitCounts = [0, 0, 0, 0];
+      
+      // Count the number of cards in each suit
+      for (var i = 0; i < hand.length; i++) {
+        var suit = hand[i] >> 4;
+        suitCounts[suit]++;
+      }
+  
+      // Check if any suit has at least `x` cards
+      for (var i = 0; i < 4; i++) {
+        if (suitCounts[i] >= x) {
+          return true;
+        }
+      }    
+      return false;
+    }  
+  
+    function hasPair_fast(hand) {
+      //any pair exists, AT LEAST !!
+      //returns the rank to be used later in two pair and three of a kind and full checks
+      for (var i = 0; i < hand.length-1; i++) {
+        for (var j = i+1; j < hand.length; j++) {
+          if ((hand[i] & 0b001111) == (hand[j] & 0b001111)) return (hand[i] & 0b001111);
+        }
+      }
+      return 0;
+    }
+  
+    function hasTwoPairs_fast(hand,firstrank) {
+      //returns if another pair, other than first rank exists
+      hand = hand.filter(card => (card & 0b001111) !== firstrank);
+      for (var i = 0; i < hand.length-1; i++) {
+        for (var j = i+1; j < hand.length; j++) {
+          if ((hand[i] & 0b001111) == (hand[j] & 0b001111)) {
+            prank2 = (hand[j] & 0b001111);
+            return true;
+          }
+        }  
+      }
+      return false;
+    }
+  
+    function hasThreeOfAKind_fast(hand,firstrank) {
+      hand = hand.filter(card => (card & 0b001111) !== firstrank);
+      return hand.length==2;
+    }
+  
+    function hasFullHouse_fast(hand,firstrank) {
+      hand = hand.filter(card => (card & 0b001111) !== firstrank);    
+      //We know there's at least pair & can't be quads, so only 2 or 3 cards left
+      //And, the remaining cards after filter MUST match rank.    
+      var handRank = hand[0] & 0b001111;
+      for (var i = 1; i < hand.length; i++) {
+         if ((hand[i] & 0b001111) != handRank) return false;
+      }
+      if (hand.length==2) {
+        prank2 = hand[0] & 0b001111;
+      } else {
+        prank2 = firstrank;
+        prank = hand[0] & 0b001111;
+      }
+      return true;
+    }
+       
+    function hasQuads_fast(hand,firstrank) {
+      hand = hand.filter(card => (card & 0b001111) !== firstrank);
+      return hand.length==1;
+    }
+  
+    function isStraight_fast(hand) {
+      var handsize=hand.length;
+      var handRanks = hand.map(function(card) {
+        return card & 0b001111;
+      });
+      var uniqueRanks = Array.from(new Set(handRanks));
+      if (uniqueRanks.length < handsize) return false;
+  
+      //ACES LO (rank value 1)
+      uniqueRanks.sort(function(a, b) { return a - b; });
+      var lowrank = uniqueRanks[0];
+      var hirank  = uniqueRanks[handsize-1];
+      if (hirank-lowrank+1==handsize) { return true; }
+  
+      //If there is even an ace...
+      if (uniqueRanks.includes(1)) {
+        //ACES HI - change aces to 14
+        uniqueRanks = uniqueRanks.map(value => { if (value === 1) { return 14; } else { return value; } });
+        uniqueRanks.sort(function(a, b) { return a - b; });
+        var lowrank = uniqueRanks[0];
+        var hirank  = uniqueRanks[handsize-1];
+        if (hirank-lowrank+1==handsize) return true;
+      }
+      return false;
+    }
+  
+    function isStraight_fast2(hand) {
+      var handsize=hand.length;
+      var uniqueRanks = hand.map(function(card) {
+        return card & 0b001111;
+      });
+      
+      //Because I always check for pair existence before calling, there will always be unique ranks equal
+      //to handsize...
+      //var uniqueRanks = Array.from(new Set(handRanks));
+      //if (uniqueRanks.length < handsize) return false;
+  
+      //ACES LO (rank value 1)
+      var bail=false;
+      srank=0;
+      for (var i = 0; i < uniqueRanks.length-1; i++) {
+        if (uniqueRanks[i] > srank) srank=uniqueRanks[i];
+        for (var j = i+1; j < uniqueRanks.length; j++) {
+          if (Math.abs(uniqueRanks[i] - uniqueRanks[j]) >= handsize) {bail=true; break;}
+        }
+        if (bail) break;
+      }
+      if (!bail) return true;
+  
+      //If there is even an ace...
+      srank=0;
+      if (uniqueRanks.includes(1)) {
+        //ACES HI - change aces to 14
+        uniqueRanks = uniqueRanks.map(value => {
+          if (value === 1) { return 14; } else { return value; }
+        });
+        for (var i = 0; i < uniqueRanks.length-1; i++) {
+          if (uniqueRanks[i] > srank) srank=uniqueRanks[i];
+          for (var j = i+1; j < uniqueRanks.length; j++) {
+            if (Math.abs(uniqueRanks[i] - uniqueRanks[j]) >= handsize) {return false;}
+          }  
+        }
+        return true;
+      }
+      return false;
+    }
+  
+    function isRoyal(hand) {
+      var handRanks = hand.map(function(card) {
+        return card & 0b001111;
+      });
+      for (var i = 0; i < royalRanks_bin.length; i++) {
+        if (!handRanks.includes(royalRanks_bin[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
 
     // Generate all possible combinations of 5-card hands from the given hand
     function generateCombinations(hand, r, combination, index) {
@@ -297,6 +412,8 @@ function rankHand_bin(hand, handSize, v, dosubs) {
       var currentRankNum = 1;
       var bail = false;
       var prank=0;
+      var prank2=0;
+      var srank=0;
 
       //isF = hasF && isFlush(currentHand); //actually worse!
       isF = isFlush(currentHand);      
@@ -326,15 +443,10 @@ function rankHand_bin(hand, handSize, v, dosubs) {
         currentRankNum = 2;
       } 
 
-      // Add subrank value (as decimals), important for comparing same ranks: kickers, better 2 pair, higher flush, straight, etc.
-      //A==.1, K==.01, ...      
-      if (dosubs) {
-        let subrank = 0;
-        currentHand.forEach(element => {
-          r = (element & 0b001111)-1
-          subrank+=subranks[r];
-        });
-        currentRankNum = currentRankNum+subrank
+      // Add subrank value (as decimals), important for comparing same ranks: 
+      // kickers, better 2 pair, higher flush, better straight, etc.
+      if (dosubs) {        
+        currentRankNum = currentRankNum + getSubrank(currentHand, currentRankNum, prank, prank2, srank);
       }      
 
       // Check if the current hand has a higher rank
