@@ -4,7 +4,7 @@
   x- reset simulation figures
   x- detect convergence?
    - add thread for processing
-   - add a variety of ther preset ranges (calling ranges, 4bet ranges, etc.)
+   - add a variety of other preset ranges (calling ranges, 4bet ranges, etc.)
    - add range frequency (mini slider)
    - add a range maker (separate tool, or just an export button)
   x- preset flop
