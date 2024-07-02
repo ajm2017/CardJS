@@ -227,7 +227,7 @@ function savePreselect(e) {
 
   function buildRangeButton(who, innerCard, card, ext) {
     let comboText = `<span class="combo-num">abc</span><span class="combo-perc">xyz</span>`;
-    let sliderText = `<input type="range" class="slider ${who}" data-target="${who}_${innerCard}${card}${ext}" min="0" max="100" value="0" step="10">`
+    let sliderText = `<input type="range" class="slider ${who}" data-target="${who}_${innerCard}${card}${ext}" min="0" max="100" value="0" step="10">`    
     if (who!='hero' && who!='villain') {
       comboText = '';
       sliderText = '';
@@ -268,7 +268,15 @@ function savePreselect(e) {
   function initResults() {
     $('.hand-range-button.hero').each(function() {
         let value = $(this).data('type').toLocaleString();
-        resultset.push([value,0,0]);
+        resultsetH.push([value,0,0]);
+        //0 - hand type
+        //1 - occurrences
+        //2 - wins
+      });
+
+      $('.hand-range-button.villain').each(function() {
+        let value = $(this).data('type').toLocaleString();
+        resultsetV.push([value,0,0]);
         //0 - hand type
         //1 - occurrences
         //2 - wins
@@ -289,7 +297,8 @@ function savePreselect(e) {
     lastEligibles=0;
     lastConvEligibles=0;
     
-    resultset = [];
+    resultsetH = [];
+    resultsetV = [];
     initResults();    
 
     trialsets=0;
@@ -305,9 +314,10 @@ function savePreselect(e) {
   }
 
   function updateResults() {
+
     maxo=0;
     sumw=0;
-    resultset.forEach(e=>{
+    resultsetH.forEach(e=>{
       o=0; w=0;
       if (eligibles) {
       o = e[1]/eligibles;
@@ -320,24 +330,56 @@ function savePreselect(e) {
       operc = o/lastmaxo;
       if (operc > 1) operc = 1;
       operc = (.5+(operc*.5)).toFixed(2);
-      $('#result_'+e[0]).css("opacity", operc); 
+      $('#Hresult_'+e[0]).css("opacity", operc); 
 
       //Win fill gradient
       fillperc = Math.ceil(w*100);
       whiteperc = 1-fillperc;
-      $('#result_'+e[0]).css('background', 'linear-gradient(to right, #4CAF50 ' +fillperc + '%, #f0f0f0 ' + whiteperc + '%)');
-      $('#result_'+e[0]).attr('title', e[0] + ' - occurs: ' + (o*100).toFixed(3) + '%, wins: ' + (w*100).toFixed(2) +'%');
-
-      //Game & Eligibles
-      $("#totalGames").html(games.toLocaleString());
-      $("#eligibleGames").html(eligibles.toLocaleString());
+      $('#Hresult_'+e[0]).css('background', 'linear-gradient(to right, #4CAF50 ' +fillperc + '%, #f0f0f0 ' + whiteperc + '%)');
+      $('#Hresult_'+e[0]).attr('title', e[0] + ' - occurs: ' + (o*100).toFixed(3) + '%, wins: ' + (w*100).toFixed(2) +'%');
 
     });
-    $("#numWins").html(sumw.toLocaleString());
-    $("#numEligible").html(eligibles.toLocaleString());
-    
+    $("#numWinsH").html(sumw.toLocaleString());
     currentEquity = ((sumw/eligibles*10000).toFixed(3)/100);
-    $("#totEquity").html(currentEquity.toLocaleString() + '%');
+    $("#totEquityH").html(currentEquity.toLocaleString() + '%');
+
+    
+    maxo=0;
+    sumw=0;
+    resultsetV.forEach(e=>{      
+      o=0; w=0;
+      if (eligibles) {
+      o = e[1]/eligibles;
+      w = e[2]/e[1];
+      sumw+=e[2];
+      }
+
+      //Occurence opacity
+      if (o > maxo) maxo=o;
+      operc = o/lastmaxo;
+      if (operc > 1) operc = 1;
+      operc = (.5+(operc*.5)).toFixed(2);
+      $('#Vresult_'+e[0]).css("opacity", operc); 
+
+      //Win fill gradient
+      fillperc = Math.ceil(w*100);
+      whiteperc = 1-fillperc;
+      $('#Vresult_'+e[0]).css('background', 'linear-gradient(to right, #4CAF50 ' +fillperc + '%, #f0f0f0 ' + whiteperc + '%)');
+      $('#Vresult_'+e[0]).attr('title', e[0] + ' - occurs: ' + (o*100).toFixed(3) + '%, wins: ' + (w*100).toFixed(2) +'%');
+
+    });
+    $("#numWinsV").html(sumw.toLocaleString());
+    currentEquity = ((sumw/eligibles*10000).toFixed(3)/100);
+    $("#totEquityV").html(currentEquity.toLocaleString() + '%');
+    
+
+    //Game & Eligibles
+    $("#totalGames").html(games.toLocaleString());
+    $("#eligibleGames").html(eligibles.toLocaleString());    
+    $("#numEligibleH").html(eligibles.toLocaleString());
+    $("#numEligibleV").html(eligibles.toLocaleString());
+    
+    
     lastmaxo = maxo;
   }
   

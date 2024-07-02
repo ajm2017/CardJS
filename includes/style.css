@@ -306,6 +306,8 @@
     bottom: -0px; /* Adjust distance from the button */
     left: -1px;
     border-radius: 5px;
+    display:none;
+    
   }
   
   .slider::-webkit-slider-thumb {

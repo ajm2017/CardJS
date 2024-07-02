@@ -99,25 +99,30 @@
   <div class="results-container">
     <div class="hand-range-selector results">
       Hero Results:       
-      <table class="rangematrix" id="resultRange">
+      <br><div class="countlabel">Wins:</div>
+        <div class="countnum" id="numWinsH">0</div> / 
+        <div class="countnum" id="numEligibleH">0</div>
+      <br><br><div class="countlabel" title="Equity includes the equity from chops as well.">Equity:</div>
+        <div class="countnum big" id="totEquityH">0</div>      
+      <table class="rangematrix" id="HresultRange">
         <tbody></tbody>
       </table>
     </div>
 
-    <div style="width:100%; margin-left:50px;">
-      <br><div class="countlabel">Total Games:</div><div class="countnum" id="totalGames"></div>
-      <br><div class="countlabel">Eligible Games:</div><div class="countnum" id="eligibleGames"></div>
-      <br><div class="countlabel">Games / s (GPS):</div><div class="countnum" id="GPS">0</div>
-      <br><div class="countlabel">Best GPS:</div><div class="countnum" id="fastestGPS">0</div>
-      <br><br>
+    
+
+    <div class="hand-range-selector results">
+      Villain Results:       
       <br><div class="countlabel">Wins:</div>
-        <div class="countnum" id="numWins">0</div> / 
-        <div class="countnum" id="numEligible">0</div>
-
-      <br><br><div class="countlabel" title="Hero Equity includes the equity from chops as well.">Hero Equity:</div>
-        <div class="countnum big" id="totEquity">0</div>
-
+        <div class="countnum" id="numWinsV">0</div> / 
+        <div class="countnum" id="numEligibleV">0</div>
+      <br><br><div class="countlabel" title="Equity includes the equity from chops as well.">Equity:</div>
+        <div class="countnum big" id="totEquityV">0</div>
+      <table class="rangematrix" id="VresultRange">
+        <tbody></tbody>
+      </table>
     </div>
+    
   </div>
 
   <div class="navbar">
@@ -126,6 +131,14 @@
     <button onclick="resetResults(); continuousTrials(5000, false); $('#stopButton').prop('disabled', false);">Continuous</button>
     <button id="stopButton" onclick="stopContinuousTrials(); $(this).prop('disabled', true);" disabled>Stop</button>
     <input type="checkbox" checked onchange="detectConvergence=!detectConvergence;"> <span style="padding-top:3px;">Detect Convergence & Stop? </span>
+
+    &nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
+    <div class="countlabel">Total Games:</div><div class="countnum" id="totalGames"></div>
+    <div class="countlabel">Eligible Games:</div><div class="countnum" id="eligibleGames"></div>
+    <div class="countlabel">Games / s (GPS):</div><div class="countnum" id="GPS">0</div>
+    <div class="countlabel">Best GPS:</div><div class="countnum" id="fastestGPS">0</div>
   </div>    
   
   <div class="card-combo-overlay"></div>
@@ -141,5 +154,8 @@
   <div class="bigcard preselected_card" id="preselect7_card" data-index="7"><span class="cardrank"></span><span class="cardsuit"></span></div>
   <div class="bigcard preselected_card" id="preselect8_card" data-index="8"><span class="cardrank"></span><span class="cardsuit"></span></div>
   <div class="bigcard preselected_card" id="preselect9_card" data-index="9"><span class="cardrank"></span><span class="cardsuit"></span></div>
+
+<br><br>
+<br><br>
 </body>
 </html>

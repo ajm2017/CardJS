@@ -69,7 +69,8 @@ $(document).ready(function() {
 
     displayRange('hero');
     displayRange('villain');
-    displayRange('result');
+    displayRange('Hresult');
+    displayRange('Vresult');
 
     var hoverTimer;
     $('.hand-range-button:not(.result)').hover(function(e) {      

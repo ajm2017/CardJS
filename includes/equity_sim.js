@@ -50,7 +50,8 @@
 
   function doTrial(v) {
     d = shuffleDeckFY(deckbin,v);
-    resultindex = -1;
+    resultindexH = -1;
+    resultindexV = -1;
     eligible = false;
     let dealtcards = [];
     let common=[];         
@@ -126,8 +127,14 @@
     if (eligible) { 
       //YES: Get result index and record occurrence
       eligibles++;        
-      resultindex = resultset.findIndex(group => group[0] === playerHands[0][1])
-      resultset[resultindex][1]++;
+
+      //for Hero
+      resultindexH = resultsetH.findIndex(group => group[0] === playerHands[0][1])
+      resultsetH[resultindexH][1]++;
+
+      //for 1st Villain
+      resultindexV = resultsetV.findIndex(group => group[0] === playerHands[1][1])
+      resultsetV[resultindexV][1]++;
 
     } else {
       //NO: Villains were eligible, so put cards back in deck and bail
@@ -189,10 +196,12 @@
     if (v) console.log(binHand2str(common));      
     if (v) console.log ('Winner', bestPlayer, bestRank, numChops, d)
 
-    //Record hero wins
+    //Record wins
     if (bestPlayer==0) {        
-      resultset[resultindex][2]+=(1/numChops);
-    }      
+      resultsetH[resultindexH][2]+=(1/numChops);
+    } else if (bestPlayer==1) {
+      resultsetV[resultindexV][2]+=(1/numChops);
+    }
 
     //Put the dealt cards back in the deck    
     d.push(...dealtcards);
