@@ -199,8 +199,18 @@
     //Record wins
     if (bestPlayer==0) {        
       resultsetH[resultindexH][2]+=(1/numChops);
+
+      //Only accurate in heads up
+      if (numChops>1) {
+        resultsetV[resultindexV][2]+=(1/numChops);  
+      }
     } else if (bestPlayer==1) {
       resultsetV[resultindexV][2]+=(1/numChops);
+      
+      //Only accurate in heads up
+      if (numChops>1) {
+        resultsetH[resultindexH][2]+=(1/numChops);  
+      }
     }
 
     //Put the dealt cards back in the deck    
