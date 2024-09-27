@@ -1,22 +1,21 @@
   Range Race:
   ===============================================
-  x- results: aggregate win % (equity)
-  x- reset simulation figures
-  x- detect convergence?
-   - add villain stats
-   - add board stats: A high board, K high board, Q high board, J high board, paired board, monotone board
-   - add hero stats:  flop x or better (on rollover per hand)
+   - add board stats: 
+      A high board, K high board, Q high board, J high board, paired board, monotone board
+         - on the flop, turn, river
+         - 
+   - add hero/villain stats:  flop x or better (on rollover per hand and for the entire range)
    - add thread for processing
-   - add a variety of other preset ranges (calling ranges, 4bet ranges, etc.)
-   - add range frequency (mini slider)  (turned this off for now)
-   - add a range maker (separate tool, or just an export button)
-  x- preset flop
-  x- preset burn card
-  x- preset hold cards
-  x- rollover button show combos   
-
+   
+  
   Flop Better or Worse
   ===============================================
    - quiz
     ==> set ranges randomly generate a flop, better or worse for hero?
 
+
+  Archive
+  ===============================================
+  - add a variety of other preset ranges (calling ranges, 4bet ranges, etc.)
+  - add range frequency (mini slider)  (turned this off for now)
+  - add a range maker (separate tool, or just an export button)

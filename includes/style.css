@@ -1,7 +1,7 @@
   body {
     background-color: #606060;
     color: white;
-    margin:5px 0px 0px 0px;
+    margin:10px 0px 0px 0px;
   }
 
   a {
@@ -108,7 +108,7 @@
 
   .quick-select-buttons button {
     margin-right: 4px;
-    font-size: 0.5em;
+    font-size: 0.4em;
   }
 
   .range-selectors-container {
@@ -217,7 +217,9 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin: auto;   
+    margin: auto;
+    align-items: flex-start;
+    flex-wrap: nowrap; /* Prevents wrapping */
   }
 
   .cardtitle {
@@ -230,9 +232,42 @@
     display: flex;
     gap: 2px;
     flex-wrap: wrap;
-    align-items: flex-start; 
+    align-items: top; 
   }
-  
+
+  .table {
+    display: flex;
+    flex-direction: column;
+}
+
+.table-cell:not(.cardtitle) {
+    padding: 8px;
+    border: 0px solid #ccc; /* Optional: for visual separation */
+}
+
+.table-cell .cardtitle {
+    padding:0px;
+}
+
+.statblock-content {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    z-index: 1;
+}
+
+
+  .statblock {
+    flex-basis: 300px;  
+    font-size: .8em;
+  }
+
+  #stats_board {
+    display: none;
+  }
+
   .cardpreselect {    
     width: 60px;
     height: 90px;
@@ -339,5 +374,15 @@
     display:flex;
     font-size:smaller;
 }
+
+.tiny {
+  font-size:.6em;
+}
+
+.smaller {
+  font-size:.8em;
+}
+
+
   
   

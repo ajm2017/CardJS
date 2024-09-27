@@ -16,9 +16,10 @@
 
 <body>
   <br>
-  <div class="player-selection">
+  
+  <div class="player-selection" style="display:none;">
     <label for="players">Players:</label>
-    <select id="players">
+    <select id="players" disabled>
       <option value="2">Heads Up (2)</option>
       <option value="3">3</option>
       <option value="4">4</option>
@@ -31,7 +32,7 @@
     </select>
   </div>
   
-  <hr size="1" noshade>
+  <hr size="1" noshade style="display:none;">
 
   <div class="range-selectors-container">
     <div class="hand-range-selector hero">
@@ -44,7 +45,7 @@
       <table class="rangematrix" id="heroRange">
         <tbody></tbody>
       </table>
-      Selected Combos:&nbsp; <span id="hero_selcombos"></span> / <span id="hero_totcombos"></span> &nbsp; (<span id="hero_rangeperc"></span>%)
+      <span class="smaller">Selected Combos:&nbsp; <span id="hero_selcombos"></span> / <span id="hero_totcombos"></span> &nbsp; (<span id="hero_rangeperc"></span>%)</span>
     </div>    
     
     <div class="hand-range-selector villain">
@@ -57,43 +58,47 @@
       <table class="rangematrix" id="villainRange">
         <tbody></tbody>
       </table>
-      Selected Combos:&nbsp; <span id="villain_selcombos"></span> / <span id="villain_totcombos"></span> &nbsp; (<span id="villain_rangeperc"></span>%)
+      <span class="smaller">Selected Combos:&nbsp; <span id="villain_selcombos"></span> / <span id="villain_totcombos"></span> &nbsp; (<span id="villain_rangeperc"></span>%)</span>
     </div>
   </div>
   <hr size="1" noshade>
 
   <div class="card-container-wrapper">
     <div class="card-container">
-      <div class="hero-cards">
-        <span class="cardtitle">Hero:</span><br>
-        <div class="cardpreselect empty" id="preselect0" data-index="0" data-title="Hero Card 1"></div>
-        <div class="cardpreselect empty" id="preselect1" data-index="1" data-title="Hero Card 2"></div>
-      </div>
-      &nbsp;&nbsp;    
-    
-      <div class="common-cards">
-        <span class="cardtitle">Common:</span><br>
-        <div class="cardpreselect empty" id="preselect2" data-index="2" data-title="Flop Card 1"></div>
-        <div class="cardpreselect empty" id="preselect3" data-index="3" data-title="Flop Card 2"></div>
-        <div class="cardpreselect empty" id="preselect4" data-index="4" data-title="Flop Card 3"></div>
-        <div class="cardpreselect empty" id="preselect5" data-index="5" data-title="Turn Card"></div>
-        <div class="cardpreselect empty" id="preselect6" data-index="6" data-title="River Card"></div>
-      </div>
-      &nbsp;
-    
-      <div class="burn-card">
-        <span class="cardtitle">Burn:</span><br>
-        <div class="cardpreselect empty" id="preselect7" data-index="7" data-title="Burn Card"></div>
-      </div>    
-      &nbsp;&nbsp;
-    
-      <div class="villain-cards">
-        <span class="cardtitle">Villain:</span><br>
-        <div class="cardpreselect empty" id="preselect8" data-index="8" data-title="Villain Card 1"></div>
-        <div class="cardpreselect empty" id="preselect9" data-index="9" data-title="Villain Card 2"></div>
-      </div>
+            <div class="hero-cards">
+                <div class="table-cell cardtitle">Hero:</div>
+                <div class="table-cell cardpreselect empty" id="preselect0" data-index="0" data-title="Hero Card 1"></div>
+                <div class="table-cell cardpreselect empty" id="preselect1" data-index="1" data-title="Hero Card 2"></div>
+            </div>
+
+            <div class="common-cards">
+                <div class="table-cell cardtitle">Common:</div>
+                <div class="table-cell cardpreselect empty" id="preselect2" data-index="2" data-title="Flop Card 1"></div>
+                <div class="table-cell cardpreselect empty" id="preselect3" data-index="3" data-title="Flop Card 2"></div>
+                <div class="table-cell cardpreselect empty" id="preselect4" data-index="4" data-title="Flop Card 3"></div>
+                <div class="table-cell cardpreselect empty" id="preselect5" data-index="5" data-title="Turn Card"></div>
+                <div class="table-cell cardpreselect empty" id="preselect6" data-index="6" data-title="River Card"></div>
+                <div class="table-cell statblock" onclick="document.getElementById('stats_board').classList.toggle('visible');">Stats &gt;&gt;
+                    <div class="statblock-content" id="stats_board">
+                        <br>aasdfasdfaf: b%
+                        <br>aasdfasdfasdf asdfadf: b%
+                    </div>
+                </div>
+            </div>
+
+            <div class="burn-card">
+                <div class="table-cell cardtitle">Burn:</div>
+                <div class="table-cell cardpreselect empty" id="preselect7" data-index="7" data-title="Burn Card"></div>
+            </div>
+
+            <div class="villain-cards">
+                <div class="table-cell cardtitle">Villain:</div>
+                <div class="table-cell cardpreselect empty" id="preselect8" data-index="8" data-title="Villain Card 1"></div>
+                <div class="table-cell cardpreselect empty" id="preselect9" data-index="9" data-title="Villain Card 2"></div>
+            </div>
+
     </div>
-  </div>
+</div>
   
   <hr size="1" noshade>
   <div class="results-container">
@@ -102,7 +107,7 @@
       <br><div class="countlabel">Wins:</div>
         <div class="countnum" id="numWinsH">0</div> / 
         <div class="countnum" id="numEligibleH">0</div>
-      <br><br><div class="countlabel" title="Equity includes the equity from chops as well.">Equity:</div>
+      <br><br><div class="countlabel" title="Hero Equity includes the equity from chops as well.">Equity:</div>
         <div class="countnum big" id="totEquityH">0</div>      
       <table class="rangematrix" id="HresultRange">
         <tbody></tbody>
